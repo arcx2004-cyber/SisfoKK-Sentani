@@ -10,7 +10,7 @@ USER www-data
 COPY --chown=www-data:www-data composer.json composer.lock ./
 
 # Install Composer dependencies (no autoloader yet)
-RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --no-autoloader
+RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --no-autoloader --ignore-platform-reqs
 
 # Copy the rest of the application code
 COPY --chown=www-data:www-data . .
