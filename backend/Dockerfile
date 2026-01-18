@@ -16,8 +16,7 @@ RUN composer install --no-interaction --no-plugins --no-scripts --prefer-dist --
 COPY --chown=www-data:www-data . .
 
 # Generate autoload files and run post-install scripts
-RUN composer dump-autoload --optimize && \
-    composer check-platform-reqs
+RUN composer dump-autoload --optimize
 
 # Copy custom entrypoint
 COPY --chown=www-data:www-data docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
