@@ -3,15 +3,6 @@ FROM serversideup/php:8.2-fpm-nginx
 # Switch to root to install dependencies
 USER root
 
-# Install any system dependencies if needed (e.g. for image processing)
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    php8.2-mysql \
-    php8.2-intl \
-    php8.2-gd \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
 # Switch back to the non-root user 'www-data' (default in this image)
 USER www-data
 
