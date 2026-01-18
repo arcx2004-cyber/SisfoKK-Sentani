@@ -1,0 +1,351 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="PPDB - Pendaftaran Peserta Didik Baru">
+  <section class="hero" style="min-height: 350px;">
+    <div class="hero-content">
+      <span class="hero-badge">📝 Pendaftaran Online</span>
+      <h1 class="hero-title">PPDB 2026/2027</h1>
+      <p class="hero-subtitle">Pendaftaran Peserta Didik Baru Sekolah Kristen Kalam Kudus Sentani</p>
+    </div>
+  </section>
+
+  <!-- Loading State -->
+  <section class="section" id="loadingState">
+    <div class="container" style="text-align: center;">
+      <p>Memuat informasi PPDB...</p>
+    </div>
+  </section>
+
+  <!-- Closed State -->
+  <section class="section" id="closedState" style="display: none;">
+    <div class="container">
+      <div class="card" style="max-width: 700px; margin: 0 auto; text-align: center; padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1.5rem;">🔒</div>
+        <h2 class="section-title" style="color: var(--error);">Pendaftaran Ditutup</h2>
+        <p style="color: var(--gray-600); margin-bottom: 2rem;">
+          Mohon maaf, pendaftaran PPDB saat ini belum dibuka atau sudah ditutup.
+        </p>
+        
+        <div class="card" style="background: var(--primary-50); border: 2px solid var(--primary-200); margin-bottom: 2rem;">
+          <h3 style="color: var(--primary-700); margin-bottom: 1rem;">📅 Jadwal Pendaftaran</h3>
+          <p id="scheduleInfo" style="color: var(--gray-700);">Informasi jadwal akan ditampilkan di sini.</p>
+        </div>
+
+        <p style="color: var(--gray-500);">
+          Untuk informasi lebih lanjut, silakan hubungi:
+        </p>
+        <a href="/kontak" class="btn btn-primary" style="margin-top: 1rem;">Hubungi Kami</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Open State - Registration Options -->
+  <section class="section" id="openState" style="display: none;">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge" style="background: #d1fae5; color: #047857;">✅ Pendaftaran Dibuka</span>
+        <h2 class="section-title">Pilih Unit Pendidikan</h2>
+        <p class="section-desc" id="periodInfo">Periode pendaftaran akan ditampilkan di sini.</p>
+      </div>
+
+      <div class="grid grid-3" id="unitCards">
+        <!-- Unit cards will be populated by JavaScript -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Registration Form (initially hidden) -->
+  <section class="section" id="formSection" style="display: none;">
+    <div class="container">
+      <button onclick="showUnitSelection()" class="btn btn-outline" style="margin-bottom: 2rem;">
+        ← Kembali ke Pilihan Unit
+      </button>
+
+      <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <h2 class="section-title" style="text-align: center; margin-bottom: 2rem;">
+          Formulir Pendaftaran <span id="selectedUnitName"></span>
+        </h2>
+
+        <form id="ppdbForm">
+          <input type="hidden" id="ppdb_setting_id" name="ppdb_setting_id" />
+
+          <h3 style="color: var(--primary-700); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-200);">📋 Data Calon Siswa</h3>
+          
+          <div class="grid grid-2" style="gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Nama Lengkap *</label>
+              <input type="text" name="nama_lengkap" required class="form-input" placeholder="Masukkan nama lengkap" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Jenis Kelamin *</label>
+              <select name="jenis_kelamin" required class="form-input">
+                <option value="">Pilih</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Tempat Lahir *</label>
+              <input type="text" name="tempat_lahir" required class="form-input" placeholder="Kota tempat lahir" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Tanggal Lahir *</label>
+              <input type="date" name="tanggal_lahir" required class="form-input" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Agama</label>
+              <input type="text" name="agama" class="form-input" placeholder="Agama" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Asal Sekolah</label>
+              <input type="text" name="asal_sekolah" class="form-input" placeholder="Nama sekolah asal" />
+            </div>
+          </div>
+
+          <div style="margin-bottom: 2rem;">
+            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Alamat Lengkap *</label>
+            <textarea name="alamat" required class="form-input" rows="3" placeholder="Alamat lengkap tempat tinggal"></textarea>
+          </div>
+
+          <h3 style="color: var(--primary-700); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-200);">📞 Kontak</h3>
+          
+          <div class="grid grid-2" style="gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Email *</label>
+              <input type="email" name="email" required class="form-input" placeholder="email@example.com" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">No. WhatsApp *</label>
+              <input type="tel" name="no_wa" required class="form-input" placeholder="08xxxxxxxxxx" />
+            </div>
+          </div>
+
+          <h3 style="color: var(--primary-700); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-200);">👨‍👩‍👧 Data Orang Tua</h3>
+          
+          <div class="grid grid-2" style="gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Nama Ayah *</label>
+              <input type="text" name="nama_ayah" required class="form-input" placeholder="Nama lengkap ayah" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Pekerjaan Ayah</label>
+              <input type="text" name="pekerjaan_ayah" class="form-input" placeholder="Pekerjaan ayah" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Nama Ibu *</label>
+              <input type="text" name="nama_ibu" required class="form-input" placeholder="Nama lengkap ibu" />
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Pekerjaan Ibu</label>
+              <input type="text" name="pekerjaan_ibu" class="form-input" placeholder="Pekerjaan ibu" />
+            </div>
+            <div class="grid-2-span">
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">No. Telepon Orang Tua *</label>
+              <input type="tel" name="no_telepon_ortu" required class="form-input" placeholder="Nomor telepon yang dapat dihubungi" />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+            Kirim Pendaftaran
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Success Message -->
+  <section class="section" id="successState" style="display: none;">
+    <div class="container">
+      <div class="card" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1.5rem;">✅</div>
+        <h2 class="section-title" style="color: var(--success);">Pendaftaran Berhasil!</h2>
+        <p style="color: var(--gray-600); margin-bottom: 1rem;">
+          Terima kasih telah mendaftar di Sekolah Kristen Kalam Kudus Sentani.
+        </p>
+        <div class="card" style="background: var(--primary-50); margin-bottom: 2rem;">
+          <p style="font-weight: 600; color: var(--primary-700);">Nomor Pendaftaran Anda:</p>
+          <p id="registrationNumber" style="font-size: 1.5rem; font-weight: 800; color: var(--primary-800);"></p>
+        </div>
+        <p style="color: var(--gray-500); font-size: 0.9rem;">
+          Simpan nomor pendaftaran ini untuk keperluan selanjutnya. 
+          Kami akan menghubungi Anda melalui email atau WhatsApp.
+        </p>
+        <a href="/" class="btn btn-primary" style="margin-top: 1.5rem;">Kembali ke Beranda</a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .grid-2-span {
+      grid-column: span 2;
+    }
+    @media (max-width: 640px) {
+      .grid-2-span {
+        grid-column: span 1;
+      }
+    }
+  </style>
+
+  <script>
+    const API_BASE = 'http://localhost:8001/api/v1';
+    let ppdbData = [];
+
+    async function loadPpdbStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/ppdb/info`);
+        const result = await response.json();
+
+        document.getElementById('loadingState').style.display = 'none';
+
+        if (result.success) {
+          ppdbData = result.data;
+
+          if (result.is_any_open) {
+            showOpenState();
+          } else {
+            showClosedState();
+          }
+        } else {
+          showClosedState();
+        }
+      } catch (error) {
+        console.error('Error loading PPDB status:', error);
+        document.getElementById('loadingState').style.display = 'none';
+        showClosedState();
+      }
+    }
+
+    function showClosedState() {
+      document.getElementById('closedState').style.display = 'block';
+      document.getElementById('openState').style.display = 'none';
+      document.getElementById('formSection').style.display = 'none';
+
+      // Show schedule info if available
+      if (ppdbData.length > 0) {
+        const nextPpdb = ppdbData.find(p => p.is_active) || ppdbData[0];
+        if (nextPpdb) {
+          const scheduleHtml = `
+            <strong>Pendaftaran berikutnya:</strong><br>
+            ${nextPpdb.tanggal_buka_formatted || 'Belum ditentukan'} - ${nextPpdb.tanggal_tutup_formatted || 'Belum ditentukan'}
+          `;
+          document.getElementById('scheduleInfo').innerHTML = scheduleHtml;
+        }
+      }
+    }
+
+    function showOpenState() {
+      document.getElementById('closedState').style.display = 'none';
+      document.getElementById('openState').style.display = 'block';
+      document.getElementById('formSection').style.display = 'none';
+
+      const openPpdb = ppdbData.filter(p => p.is_open);
+      
+      // Show period info
+      if (openPpdb.length > 0) {
+        const first = openPpdb[0];
+        document.getElementById('periodInfo').innerHTML = `
+          Periode pendaftaran: <strong>${first.tanggal_buka_formatted}</strong> s/d <strong>${first.tanggal_tutup_formatted}</strong>
+        `;
+      }
+
+      // Populate unit cards
+      const unitCardsHtml = openPpdb.map(ppdb => `
+        <div class="unit-card">
+          <div class="unit-icon">${getUnitIcon(ppdb.unit?.kode)}</div>
+          <h3 class="unit-name">${ppdb.unit?.nama || 'Unit'}</h3>
+          <p class="unit-desc">Tahun Ajaran ${ppdb.tahun_ajaran?.nama || ''}</p>
+          <p style="margin: 1rem 0; color: var(--gray-600);">
+            <strong>Biaya:</strong> Rp ${formatNumber(ppdb.biaya_pendaftaran || 0)}
+          </p>
+          <button class="btn btn-primary daftar-btn" data-id="${ppdb.id}" data-unit="${encodeURIComponent(ppdb.unit?.nama || 'Unit')}">
+            Daftar Sekarang
+          </button>
+        </div>
+      `).join('');
+
+      document.getElementById('unitCards').innerHTML = unitCardsHtml;
+
+      // Add click handlers
+      document.querySelectorAll('.daftar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const id = this.getAttribute('data-id');
+          const unitName = decodeURIComponent(this.getAttribute('data-unit'));
+          showForm(id, unitName);
+        });
+      });
+    }
+
+    function showForm(ppdbSettingId, unitName) {
+      document.getElementById('openState').style.display = 'none';
+      document.getElementById('formSection').style.display = 'block';
+      document.getElementById('ppdb_setting_id').value = ppdbSettingId;
+      document.getElementById('selectedUnitName').textContent = unitName;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showUnitSelection() {
+      showOpenState();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function getUnitIcon(code) {
+      const icons = { 'TK': '🌸', 'SD': '📚', 'SMP': '🎓' };
+      return icons[code] || '🏫';
+    }
+
+    function formatNumber(num) {
+      return new Intl.NumberFormat('id-ID').format(num);
+    }
+
+    // Form submission
+    document.getElementById('ppdbForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch(`${API_BASE}/ppdb/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          document.getElementById('formSection').style.display = 'none';
+          document.getElementById('successState').style.display = 'block';
+          document.getElementById('registrationNumber').textContent = result.data.nomor_pendaftaran;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          alert('Gagal mengirim pendaftaran: ' + (result.message || 'Silakan coba lagi'));
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+      }
+    });
+
+    // Load on page ready
+    loadPpdbStatus();
+  </script>
+</Layout>
