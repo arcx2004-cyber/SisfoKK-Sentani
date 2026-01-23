@@ -10,54 +10,6 @@
 				"cache-control": "public, max-age=31536000, immutable"
 			},
 			"continue": true
-		},
-		{
-			"src": "^/_server-islands/([^/]+?)/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/_image/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/berita/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/galeri/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/kegiatan/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/kontak/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/ppdb/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/profile/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/unit/([^/]+?)/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/unit/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/visi-misi/?$",
-			"dest": "_render"
-		},
-		{
-			"src": "^/$",
-			"dest": "_render"
 		}
 	]
 }

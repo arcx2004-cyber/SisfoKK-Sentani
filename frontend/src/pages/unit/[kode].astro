@@ -1,7 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 
-export const prerender = false;
+// Static paths for unit pages
+export function getStaticPaths() {
+  return [
+    { params: { kode: 'tk' } },
+    { params: { kode: 'sd' } },
+    { params: { kode: 'smp' } },
+  ];
+}
 
 // Get the unit code from the URL
 const { kode } = Astro.params;

@@ -1,10 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-export const prerender = false;
-
-// Fetch contact settings from API
-let contactData = {
+// Static contact data (no API fetch for static deploy)
+const contactData = {
   address: 'Jl. Raya Sentani, Sentani, Jayapura, Papua 99352',
   phone: '(0967) 123456',
   whatsapp: '62967123456',
@@ -14,26 +12,6 @@ let contactData = {
   map_lng: '140.5047',
   operational_hours: 'Senin - Jumat: 07:00 - 15:00 WIT, Sabtu: 07:00 - 12:00 WIT'
 };
-
-try {
-  const response = await fetch('http://localhost:8001/api/v1/settings');
-  const result = await response.json();
-  if (result.success && result.data) {
-    const s = result.data;
-    contactData = {
-      address: s.contact_address || contactData.address,
-      phone: s.contact_phone || contactData.phone,
-      whatsapp: s.contact_whatsapp || contactData.whatsapp,
-      email1: s.contact_email1 || contactData.email1,
-      email2: s.contact_email2 || contactData.email2,
-      map_lat: s.contact_map_lat || contactData.map_lat,
-      map_lng: s.contact_map_lng || contactData.map_lng,
-      operational_hours: s.contact_operational_hours || contactData.operational_hours
-    };
-  }
-} catch (e) {
-  console.error('Failed to fetch contact settings:', e);
-}
 
 // Create Google Maps embed URL
 const mapEmbedUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3986.28!2d${contactData.map_lng}!3d${contactData.map_lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLocation!5e0!3m2!1sen!2sid!4v1704100000000!5m2!1sen!2sid`;
