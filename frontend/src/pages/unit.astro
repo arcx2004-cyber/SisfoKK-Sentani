@@ -1,5 +1,26 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { fetchUnits, getUnitIcon } from '../lib/api';
+
+// Fetch units from API
+const units = await fetchUnits();
+
+// Fallback data if API returns empty
+const displayUnits = units.length > 0 ? units : [
+  { id: 1, nama: 'TK Kalam Kudus', kode: 'TK', deskripsi: 'Pendidikan Anak Usia Dini dengan pendekatan bermain sambil belajar dalam suasana kasih Kristus.', is_active: true, urutan: 1 },
+  { id: 2, nama: 'SD Kalam Kudus', kode: 'SD', deskripsi: 'Pendidikan Dasar 6 tahun dengan kurikulum terpadu dan pembentukan karakter Kristiani.', is_active: true, urutan: 2 },
+  { id: 3, nama: 'SMP Kalam Kudus', kode: 'SMP', deskripsi: 'Pendidikan Menengah Pertama dengan pengembangan akademik dan life skills.', is_active: true, urutan: 3 },
+];
+
+// Unit features based on kode
+function getUnitFeatures(kode: string): string[] {
+  const features: Record<string, string[]> = {
+    'TK': ['Usia 4-6 tahun', 'Kurikulum PAUD Merdeka', 'Pendidikan Karakter Kristiani', 'Kegiatan Ekstrakurikuler'],
+    'SD': ['Kelas 1-6', 'Kurikulum Merdeka', 'Pembelajaran Aktif & Kreatif', 'Laboratorium & Perpustakaan'],
+    'SMP': ['Kelas 7-9', 'Kurikulum Merdeka', 'Bimbingan Konseling', 'Persiapan Masa Depan'],
+  };
+  return features[kode] || ['Kurikulum Merdeka', 'Pendidikan Karakter'];
+}
 ---
 
 <Layout title="Unit Pendidikan">
@@ -14,53 +35,22 @@ import Layout from '../layouts/Layout.astro';
   <section class="section">
     <div class="container">
       <div class="grid grid-3">
-        <div class="unit-card">
-          <div class="unit-icon">🌸</div>
-          <h3 class="unit-name">TK Kalam Kudus</h3>
-          <p class="unit-desc">Pendidikan Anak Usia Dini dengan pendekatan bermain sambil belajar dalam suasana kasih Kristus.</p>
-          <ul style="text-align: left; margin: 1.5rem 0; color: var(--gray-600);">
-            <li>Usia 4-6 tahun</li>
-            <li>Kurikulum PAUD Merdeka</li>
-            <li>Pendidikan Karakter Kristiani</li>
-            <li>Kegiatan Ekstrakurikuler</li>
-          </ul>
-          <div class="unit-buttons">
-            <a href="/unit/TK" class="btn btn-outline">Lihat Detail</a>
-            <a href="/ppdb" class="btn btn-primary">Daftar Sekarang</a>
+        {displayUnits.map((unit) => (
+          <div class="unit-card">
+            <div class="unit-icon">{getUnitIcon(unit.kode)}</div>
+            <h3 class="unit-name">{unit.nama}</h3>
+            <p class="unit-desc">{unit.deskripsi || `Unit ${unit.nama} Sekolah Kalam Kudus Sentani`}</p>
+            <ul style="text-align: left; margin: 1.5rem 0; color: var(--gray-600);">
+              {getUnitFeatures(unit.kode).map((feature) => (
+                <li>{feature}</li>
+              ))}
+            </ul>
+            <div class="unit-buttons">
+              <a href={`/unit/${unit.kode.toLowerCase()}`} class="btn btn-outline">Lihat Detail</a>
+              <a href="/ppdb" class="btn btn-primary">Daftar Sekarang</a>
+            </div>
           </div>
-        </div>
-        
-        <div class="unit-card">
-          <div class="unit-icon">📚</div>
-          <h3 class="unit-name">SD Kalam Kudus</h3>
-          <p class="unit-desc">Pendidikan Dasar 6 tahun dengan kurikulum terpadu dan pembentukan karakter Kristiani.</p>
-          <ul style="text-align: left; margin: 1.5rem 0; color: var(--gray-600);">
-            <li>Kelas 1-6</li>
-            <li>Kurikulum Merdeka</li>
-            <li>Pembelajaran Aktif & Kreatif</li>
-            <li>Laboratorium & Perpustakaan</li>
-          </ul>
-          <div class="unit-buttons">
-            <a href="/unit/SD" class="btn btn-outline">Lihat Detail</a>
-            <a href="/ppdb" class="btn btn-primary">Daftar Sekarang</a>
-          </div>
-        </div>
-
-        <div class="unit-card">
-          <div class="unit-icon">🎓</div>
-          <h3 class="unit-name">SMP Kalam Kudus</h3>
-          <p class="unit-desc">Pendidikan Menengah Pertama dengan pengembangan akademik dan life skills.</p>
-          <ul style="text-align: left; margin: 1.5rem 0; color: var(--gray-600);">
-            <li>Kelas 7-9</li>
-            <li>Kurikulum Merdeka</li>
-            <li>Bimbingan Konseling</li>
-            <li>Persiapan Masa Depan</li>
-          </ul>
-          <div class="unit-buttons">
-            <a href="/unit/SMP" class="btn btn-outline">Lihat Detail</a>
-            <a href="/ppdb" class="btn btn-primary">Daftar Sekarang</a>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   </section>
@@ -86,4 +76,3 @@ import Layout from '../layouts/Layout.astro';
     }
   </style>
 </Layout>
-

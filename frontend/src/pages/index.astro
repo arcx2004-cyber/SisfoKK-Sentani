@@ -1,5 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { fetchSliders, fetchUnits, fetchNews, getUnitIcon, formatDate, getImageUrl } from '../lib/api';
+
+// Fetch data from API
+const sliders = await fetchSliders();
+const units = await fetchUnits();
+const news = await fetchNews(3);
+
+// Fallback data for units if API returns empty
+const displayUnits = units.length > 0 ? units : [
+  { id: 1, nama: 'TK', kode: 'TK', deskripsi: 'Pendidikan Anak Usia Dini dengan pendekatan bermain sambil belajar', urutan: 1, is_active: true },
+  { id: 2, nama: 'SD', kode: 'SD', deskripsi: 'Pendidikan Dasar 6 tahun dengan kurikulum terpadu dan pendidikan karakter', urutan: 2, is_active: true },
+  { id: 3, nama: 'SMP', kode: 'SMP', deskripsi: 'Pendidikan Menengah Pertama dengan pengembangan akademik dan life skills', urutan: 3, is_active: true },
+];
+
+// Fallback news if API returns empty
+const displayNews = news.length > 0 ? news : [
+  { id: 1, title: 'PPDB 2026/2027 Resmi Dibuka', slug: 'ppdb-2026', excerpt: 'Pendaftaran Peserta Didik Baru untuk tahun ajaran 2026/2027 telah resmi dibuka...', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop', published_at: '2026-01-12' },
+  { id: 2, title: 'Siswa Raih Medali Olimpiade Sains', slug: 'olimpiade-sains', excerpt: 'Siswa SMP Kalam Kudus berhasil meraih medali emas dalam Olimpiade Sains Nasional...', image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=200&fit=crop', published_at: '2026-01-08' },
+  { id: 3, title: 'Perayaan Natal Bersama', slug: 'natal-2025', excerpt: 'Seluruh civitas akademika merayakan Natal bersama dengan penuh sukacita...', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop', published_at: '2025-12-25' },
+];
 ---
 
 <Layout title="Home">
@@ -21,7 +41,7 @@ import Layout from '../layouts/Layout.astro';
     <div class="container">
       <div class="stats-grid">
         <div class="stat">
-          <div class="stat-number">3</div>
+          <div class="stat-number">{displayUnits.length}</div>
           <div class="stat-label">Unit Sekolah</div>
         </div>
         <div class="stat">
@@ -50,26 +70,14 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="grid grid-3">
-        <div class="unit-card">
-          <div class="unit-icon">🌸</div>
-          <h3 class="unit-name">TK</h3>
-          <p class="unit-desc">Pendidikan Anak Usia Dini dengan pendekatan bermain sambil belajar</p>
-          <a href="/unit/tk" class="btn btn-primary">Selengkapnya</a>
-        </div>
-        
-        <div class="unit-card">
-          <div class="unit-icon">📚</div>
-          <h3 class="unit-name">SD</h3>
-          <p class="unit-desc">Pendidikan Dasar 6 tahun dengan kurikulum terpadu dan pendidikan karakter</p>
-          <a href="/unit/sd" class="btn btn-primary">Selengkapnya</a>
-        </div>
-
-        <div class="unit-card">
-          <div class="unit-icon">🎓</div>
-          <h3 class="unit-name">SMP</h3>
-          <p class="unit-desc">Pendidikan Menengah Pertama dengan pengembangan akademik dan life skills</p>
-          <a href="/unit/smp" class="btn btn-primary">Selengkapnya</a>
-        </div>
+        {displayUnits.map((unit) => (
+          <div class="unit-card">
+            <div class="unit-icon">{getUnitIcon(unit.kode)}</div>
+            <h3 class="unit-name">{unit.nama}</h3>
+            <p class="unit-desc">{unit.deskripsi || `Unit ${unit.nama} Sekolah Kalam Kudus Sentani`}</p>
+            <a href={`/unit/${unit.kode.toLowerCase()}`} class="btn btn-primary">Selengkapnya</a>
+          </div>
+        ))}
       </div>
     </div>
   </section>
@@ -146,32 +154,16 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="grid grid-3">
-        <article class="news-card">
-          <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop" alt="Penerimaan Siswa Baru" />
-          <div class="news-card-content">
-            <span class="news-card-date">12 Januari 2026</span>
-            <h3 class="news-card-title">PPDB 2026/2027 Resmi Dibuka</h3>
-            <p class="news-card-excerpt">Pendaftaran Peserta Didik Baru untuk tahun ajaran 2026/2027 telah resmi dibuka...</p>
-          </div>
-        </article>
-
-        <article class="news-card">
-          <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=200&fit=crop" alt="Prestasi Siswa" />
-          <div class="news-card-content">
-            <span class="news-card-date">8 Januari 2026</span>
-            <h3 class="news-card-title">Siswa Raih Medali Olimpiade Sains</h3>
-            <p class="news-card-excerpt">Siswa SMP Kalam Kudus berhasil meraih medali emas dalam Olimpiade Sains Nasional...</p>
-          </div>
-        </article>
-
-        <article class="news-card">
-          <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop" alt="Kegiatan Sekolah" />
-          <div class="news-card-content">
-            <span class="news-card-date">5 Januari 2026</span>
-            <h3 class="news-card-title">Perayaan Natal Bersama</h3>
-            <p class="news-card-excerpt">Seluruh civitas akademika merayakan Natal bersama dengan penuh sukacita...</p>
-          </div>
-        </article>
+        {displayNews.map((item) => (
+          <article class="news-card">
+            <img src={getImageUrl(item.image, 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop')} alt={item.title} />
+            <div class="news-card-content">
+              <span class="news-card-date">{formatDate(item.published_at)}</span>
+              <h3 class="news-card-title">{item.title}</h3>
+              <p class="news-card-excerpt">{item.excerpt || item.title}</p>
+            </div>
+          </article>
+        ))}
       </div>
 
       <div style="text-align: center; margin-top: 2rem;">

@@ -1,5 +1,19 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { fetchGalleries, getImageUrl } from '../lib/api';
+
+// Fetch galleries from API
+const galleries = await fetchGalleries();
+
+// Fallback data if API returns empty
+const displayGalleries = galleries.length > 0 ? galleries : [
+  { id: 1, title: 'Kegiatan Belajar Mengajar', description: 'Suasana pembelajaran di kelas dengan metode aktif dan interaktif', cover_image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&h=250&fit=crop', photos: [] },
+  { id: 2, title: 'Upacara Bendera', description: 'Pembinaan karakter kebangsaan melalui upacara rutin', cover_image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=250&fit=crop', photos: [] },
+  { id: 3, title: 'Perayaan Natal', description: 'Sukacita perayaan Natal bersama seluruh civitas akademika', cover_image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=250&fit=crop', photos: [] },
+  { id: 4, title: 'Perpustakaan', description: 'Fasilitas perpustakaan dengan koleksi buku yang lengkap', cover_image: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=400&h=250&fit=crop', photos: [] },
+  { id: 5, title: 'Kegiatan Ekstrakurikuler', description: 'Pengembangan bakat dan minat siswa melalui ekskul', cover_image: 'https://images.unsplash.com/photo-1594608661623-aa0bd3a69d98?w=400&h=250&fit=crop', photos: [] },
+  { id: 6, title: 'Wisuda & Kelulusan', description: 'Momen kelulusan siswa-siswi berprestasi', cover_image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=250&fit=crop', photos: [] },
+];
 ---
 
 <Layout title="Galeri">
@@ -19,53 +33,24 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="grid grid-3">
-        <div class="card" style="padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&h=250&fit=crop" alt="Kegiatan Belajar" style="width: 100%; height: 200px; object-fit: cover;" />
-          <div style="padding: 1.5rem;">
-            <h3 class="card-title">Kegiatan Belajar Mengajar</h3>
-            <p class="card-desc">Suasana pembelajaran di kelas dengan metode aktif dan interaktif</p>
+        {displayGalleries.map((gallery) => (
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <img 
+              src={getImageUrl(gallery.cover_image, 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=400&h=250&fit=crop')} 
+              alt={gallery.title} 
+              style="width: 100%; height: 200px; object-fit: cover;" 
+            />
+            <div style="padding: 1.5rem;">
+              <h3 class="card-title">{gallery.title}</h3>
+              <p class="card-desc">{gallery.description || 'Album foto kegiatan sekolah'}</p>
+              {gallery.photos && gallery.photos.length > 0 && (
+                <p style="color: var(--gray-500); font-size: 0.875rem; margin-top: 0.5rem;">
+                  📸 {gallery.photos.length} foto
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div class="card" style="padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=250&fit=crop" alt="Upacara" style="width: 100%; height: 200px; object-fit: cover;" />
-          <div style="padding: 1.5rem;">
-            <h3 class="card-title">Upacara Bendera</h3>
-            <p class="card-desc">Pembinaan karakter kebangsaan melalui upacara rutin</p>
-          </div>
-        </div>
-
-        <div class="card" style="padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=250&fit=crop" alt="Perayaan Natal" style="width: 100%; height: 200px; object-fit: cover;" />
-          <div style="padding: 1.5rem;">
-            <h3 class="card-title">Perayaan Natal</h3>
-            <p class="card-desc">Sukacita perayaan Natal bersama seluruh civitas akademika</p>
-          </div>
-        </div>
-
-        <div class="card" style="padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=400&h=250&fit=crop" alt="Perpustakaan" style="width: 100%; height: 200px; object-fit: cover;" />
-          <div style="padding: 1.5rem;">
-            <h3 class="card-title">Perpustakaan</h3>
-            <p class="card-desc">Fasilitas perpustakaan dengan koleksi buku yang lengkap</p>
-          </div>
-        </div>
-
-        <div class="card" style="padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1594608661623-aa0bd3a69d98?w=400&h=250&fit=crop" alt="Ekstrakurikuler" style="width: 100%; height: 200px; object-fit: cover;" />
-          <div style="padding: 1.5rem;">
-            <h3 class="card-title">Kegiatan Ekstrakurikuler</h3>
-            <p class="card-desc">Pengembangan bakat dan minat siswa melalui ekskul</p>
-          </div>
-        </div>
-
-        <div class="card" style="padding: 0; overflow: hidden;">
-          <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=250&fit=crop" alt="Wisuda" style="width: 100%; height: 200px; object-fit: cover;" />
-          <div style="padding: 1.5rem;">
-            <h3 class="card-title">Wisuda & Kelulusan</h3>
-            <p class="card-desc">Momen kelulusan siswa-siswi berprestasi</p>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   </section>

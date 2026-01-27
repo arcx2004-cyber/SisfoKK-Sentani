@@ -249,8 +249,8 @@ const { kode } = Astro.params;
   </style>
 
   <script define:vars={{ kode }}>
-    const API_BASE = 'https://sisfokk-sentani-administrasi.vercel.app/api/v1';
-    const STORAGE_BASE = 'https://sisfokk-sentani-administrasi.vercel.app/storage/';
+    const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    const STORAGE_BASE = import.meta.env.PUBLIC_STORAGE_URL || 'http://localhost:8080/storage/';
     const unitKode = kode || window.location.pathname.split('/').pop();
 
     function animateNumber(elementId, target) {

@@ -14,26 +14,30 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create Roles (new structure)
-        $roles = [
-            'admin' => 'Full access to all features',
-            'kepsek' => 'Approve raport, view reports, manage teachers',
-            'ptk' => 'Input nilai, absensi, see own classes (Guru)',
-            'wali_kelas' => 'Manage rombel, print raport',
-            'tendik' => 'Manage payments, master data',
-            'siswa' => 'View own raport, payment status',
-        ];
+        // Call seeders first to establish Roles, Permissions, and Master Data
+        $this->call([
+            MasterDataSeeder::class,
+            RolesAndPermissionsSeeder::class,
+        ]);
 
-        foreach ($roles as $name => $description) {
-            Role::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
-        }
+        // Create Super Admin User (System Owner)
+        $superAdmin = User::firstOrCreate(
+            ['email' => 'superadmin@sisfokk.sch.id'],
+            [
+                'name' => 'Super Administrator',
+                'password' => Hash::make(env('SUPER_ADMIN_PASSWORD', 'SisfoKK2024!')), // Fallback for local, but should be env
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+        $superAdmin->assignRole('super_admin');
 
-        // Create Admin User
+        // Create Admin User (Content Manager)
         $admin = User::firstOrCreate(
             ['email' => 'admin@sisfokk.sch.id'],
             [
-                'name' => 'Administrator',
-                'password' => Hash::make('SisfoKK2024!'),
+                'name' => 'Administrator Website',
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'SisfoKK2024!')),
                 'is_active' => true,
                 'email_verified_at' => now(),
             ]

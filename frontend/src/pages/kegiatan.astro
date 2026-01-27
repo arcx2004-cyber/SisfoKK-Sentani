@@ -1,5 +1,38 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { fetchKegiatan, formatDate, getImageUrl } from '../lib/api';
+
+// Fetch kegiatan from API
+const kegiatan = await fetchKegiatan();
+
+// Fallback data if API returns empty
+const displayKegiatan = kegiatan.length > 0 ? kegiatan : [
+  { id: 1, title: 'Pembukaan Semester Genap', slug: 'pembukaan-semester', description: 'Upacara pembukaan semester genap tahun ajaran 2025/2026', tanggal_mulai: '2026-01-15', lokasi: 'Lapangan Sekolah' },
+  { id: 2, title: 'Rapat Orang Tua Murid', slug: 'rapat-ortu', description: 'Pertemuan dengan wali murid untuk pembahasan program semester', tanggal_mulai: '2026-01-20', lokasi: 'Aula Sekolah' },
+  { id: 3, title: 'Lomba Literasi', slug: 'lomba-literasi', description: 'Kompetisi menulis dan membaca untuk semua jenjang', tanggal_mulai: '2026-01-25', lokasi: 'Perpustakaan' },
+  { id: 4, title: 'Field Trip ke Museum', slug: 'field-trip', description: 'Kunjungan edukatif ke Museum Loka Budaya Papua', tanggal_mulai: '2026-02-01', lokasi: 'Jayapura' },
+];
+
+// Helper to get date parts
+function getDateParts(dateString: string) {
+  const date = new Date(dateString);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  return {
+    day: date.getDate().toString().padStart(2, '0'),
+    month: months[date.getMonth()]
+  };
+}
+
+// Helper to get card color based on index
+function getCardColor(index: number) {
+  const colors = [
+    { border: 'var(--primary-500)', bg: 'var(--primary-100)', textDark: 'var(--primary-700)', textLight: 'var(--primary-600)' },
+    { border: 'var(--primary-500)', bg: 'var(--primary-100)', textDark: 'var(--primary-700)', textLight: 'var(--primary-600)' },
+    { border: 'var(--warning)', bg: '#fef3c7', textDark: '#b45309', textLight: '#d97706' },
+    { border: 'var(--success)', bg: '#d1fae5', textDark: '#047857', textLight: '#10b981' },
+  ];
+  return colors[index % colors.length];
+}
 ---
 
 <Layout title="Kegiatan">
@@ -19,61 +52,27 @@ import Layout from '../layouts/Layout.astro';
       </div>
 
       <div class="grid grid-2" style="max-width: 900px; margin: 0 auto;">
-        <div class="card" style="border-left: 4px solid var(--primary-500);">
-          <div style="display: flex; gap: 1rem; align-items: flex-start;">
-            <div style="background: var(--primary-100); padding: 1rem; border-radius: var(--radius); text-align: center; min-width: 70px;">
-              <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-700);">15</div>
-              <div style="font-size: 0.875rem; color: var(--primary-600);">Jan</div>
+        {displayKegiatan.map((item, index) => {
+          const dateParts = getDateParts(item.tanggal_mulai);
+          const color = getCardColor(index);
+          return (
+            <div class="card" style={`border-left: 4px solid ${color.border};`}>
+              <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                <div style={`background: ${color.bg}; padding: 1rem; border-radius: var(--radius); text-align: center; min-width: 70px;`}>
+                  <div style={`font-size: 1.5rem; font-weight: 800; color: ${color.textDark};`}>{dateParts.day}</div>
+                  <div style={`font-size: 0.875rem; color: ${color.textLight};`}>{dateParts.month}</div>
+                </div>
+                <div>
+                  <h3 class="card-title">{item.title}</h3>
+                  <p class="card-desc">{item.description || item.title}</p>
+                  {item.lokasi && (
+                    <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">📍 {item.lokasi}</p>
+                  )}
+                </div>
+              </div>
             </div>
-            <div>
-              <h3 class="card-title">Pembukaan Semester Genap</h3>
-              <p class="card-desc">Upacara pembukaan semester genap tahun ajaran 2025/2026</p>
-              <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">📍 Lapangan Sekolah</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="border-left: 4px solid var(--primary-500);">
-          <div style="display: flex; gap: 1rem; align-items: flex-start;">
-            <div style="background: var(--primary-100); padding: 1rem; border-radius: var(--radius); text-align: center; min-width: 70px;">
-              <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-700);">20</div>
-              <div style="font-size: 0.875rem; color: var(--primary-600);">Jan</div>
-            </div>
-            <div>
-              <h3 class="card-title">Rapat Orang Tua Murid</h3>
-              <p class="card-desc">Pertemuan dengan wali murid untuk pembahasan program semester</p>
-              <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">📍 Aula Sekolah</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="border-left: 4px solid var(--warning);">
-          <div style="display: flex; gap: 1rem; align-items: flex-start;">
-            <div style="background: #fef3c7; padding: 1rem; border-radius: var(--radius); text-align: center; min-width: 70px;">
-              <div style="font-size: 1.5rem; font-weight: 800; color: #b45309;">25</div>
-              <div style="font-size: 0.875rem; color: #d97706;">Jan</div>
-            </div>
-            <div>
-              <h3 class="card-title">Lomba Literasi</h3>
-              <p class="card-desc">Kompetisi menulis dan membaca untuk semua jenjang</p>
-              <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">📍 Perpustakaan</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="border-left: 4px solid var(--success);">
-          <div style="display: flex; gap: 1rem; align-items: flex-start;">
-            <div style="background: #d1fae5; padding: 1rem; border-radius: var(--radius); text-align: center; min-width: 70px;">
-              <div style="font-size: 1.5rem; font-weight: 800; color: #047857;">01</div>
-              <div style="font-size: 0.875rem; color: #10b981;">Feb</div>
-            </div>
-            <div>
-              <h3 class="card-title">Field Trip ke Museum</h3>
-              <p class="card-desc">Kunjungan edukatif ke Museum Loka Budaya Papua</p>
-              <p style="font-size: 0.875rem; color: var(--gray-500); margin-top: 0.5rem;">📍 Jayapura</p>
-            </div>
-          </div>
-        </div>
+          );
+        })}
       </div>
     </div>
   </section>

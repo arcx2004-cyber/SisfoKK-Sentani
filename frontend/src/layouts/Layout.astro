@@ -20,7 +20,7 @@ const menuItems = [
   { name: 'PPDB', href: '/ppdb' },
 ];
 
-const loginUrl = 'https://sisfokk-sentani-administrasi.vercel.app/admin';
+const loginUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:8001/admin';
 ---
 
 <!DOCTYPE html>

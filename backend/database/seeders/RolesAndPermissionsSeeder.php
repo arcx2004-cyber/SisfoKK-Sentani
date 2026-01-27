@@ -16,7 +16,8 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // 1. Create Roles sesuai kebutuhan user
         $roles = [
-            'admin' => 'Administrator',
+            'super_admin' => 'Super Administrator (System Owner)', // Changed key to standard snake_case
+            'admin' => 'Administrator Website (Content Manager)',
             'kepsek' => 'Kepala Sekolah',
             'ptk' => 'PTK (Guru)',
             'wali_kelas' => 'Wali Kelas',
@@ -30,10 +31,26 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // 2. Define Permissions per Role
         
-        // ADMIN (Full Access)
+        // SUPER ADMIN (Full Access)
+        // Usually handled by Gate::before or 'Super Admin' role logic in AppServiceProvider/User Model. 
+        // But we can also assign all permissions here if preferred.
+        // For this system, we will rely on specific permission assignments or a 'super_admin' check.
+
+        // ADMIN (Website Content Manager)
         $adminPermissions = [
-            // All permissions will be auto-assigned via super_admin or explicit grant
+            // Dashboard
+            'view_dashboard', // Assuming there's a dashboard permission or just default access
+            // Content
+            'view_any_news', 'create_news', 'update_news', 'delete_news',
+            'view_any_page', 'create_page', 'update_page', 'delete_page',
+            'view_any_gallery', 'create_gallery', 'update_gallery', 'delete_gallery',
+            'view_any_slider', 'create_slider', 'update_slider', 'delete_slider',
+            'view_any_menu', 'create_menu', 'update_menu', 'delete_menu',
+            'view_any_kegiatan', 'create_kegiatan', 'update_kegiatan', 'delete_kegiatan',
+            // Settings
+            'view_any_school::setting', 'update_school::setting',
         ];
+        $this->assignPermissions('admin', $adminPermissions);
 
         // KEPALA SEKOLAH (View All, Monitor, Approval)
         $kepsekPermissions = [
