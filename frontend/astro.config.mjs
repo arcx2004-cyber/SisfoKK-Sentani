@@ -5,7 +5,11 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
     output: 'static',
     server: {
-        host: true,
-        allowedHosts: true
+        host: true
+    },
+    vite: {
+        server: {
+            allowedHosts: ['skkksentani.web.id']
+        }
     }
 });
