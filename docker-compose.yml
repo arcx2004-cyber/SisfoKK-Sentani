@@ -47,7 +47,7 @@ services:
     container_name: sisfokk_nginx
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80"
     volumes:
       - ./backend:/var/www/backend
       - ./frontend/dist:/var/www/frontend
