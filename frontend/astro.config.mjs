@@ -3,5 +3,9 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-    output: 'static'
+    output: 'static',
+    server: {
+        host: true,
+        allowedHosts: true
+    }
 });
