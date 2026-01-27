@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('webadmin')
             ->login(\App\Filament\Pages\Auth\Login::class)
+            ->profile(\App\Filament\Pages\Auth\EditProfile::class)
             ->brandName('Kalam Kudus Sentani')
             ->brandLogo(asset('logo.png'))
             ->brandLogoHeight('3rem')
