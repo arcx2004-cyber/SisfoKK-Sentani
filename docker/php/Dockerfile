@@ -1,23 +1,22 @@
-FROM php:8.3-fpm
+FROM php:8.3-fpm-alpine
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    libonig-dev \
+    oniguruma-dev \
     libxml2-dev \
     libzip-dev \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libicu-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    icu-dev \
     zip \
     unzip \
     nodejs \
-    npm
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    npm \
+    linux-headers \
+    $PHPIZE_DEPS
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
@@ -33,8 +32,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/backend
 
 # Create system user
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
+# Alpine uses addgroup/adduser
+RUN addgroup -g 1000 www && \
+    adduser -u 1000 -G www -s /bin/sh -D www
 
 # Set ownership
 RUN chown -R www:www /var/www
@@ -43,3 +43,4 @@ USER www
 
 EXPOSE 9000
 CMD ["php-fpm"]
+
