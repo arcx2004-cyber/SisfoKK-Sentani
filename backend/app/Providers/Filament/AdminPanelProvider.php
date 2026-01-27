@@ -27,7 +27,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path('webadmin')
             ->login(\App\Filament\Pages\Auth\Login::class)
             ->brandName('Kalam Kudus Sentani')
             ->brandLogo(asset('logo.png'))
