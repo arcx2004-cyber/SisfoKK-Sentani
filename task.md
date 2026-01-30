@@ -44,4 +44,15 @@
 - [ ] Log Monitoring (Error logs)
 - [ ] Update Security Patch Berkala
 
-*Last Updated: 2026-01-30 10:45 (CI/CD Verified)*
+## 6. Selesaikan Isu Spesifik 🐞
+- [x] Investigasi Modul RAPBS yang Hilang
+    - [x] Cek Database & File System
+    - [x] Identifikasi Masalah Visibility (Fix logic di `RapbsResource.php`)
+    - [x] Deploy Perbaikan & Verifikasi
+- [/] Modul Impor Data Siswa
+    - [x] Perencanaan (CSV Parser approach)
+    - [ ] Pembuatan Template Excel/CSV
+    - [ ] Implementasi Backend Action
+    - [ ] Testing & Verifikasi
+
+*Last Updated: 2026-01-30 12:30*
