@@ -32,7 +32,7 @@ class PageResource extends BaseResource
                 Forms\Components\TextInput::make('slug')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('konten')
+                Forms\Components\RichEditor::make('konten')
                     ->columnSpanFull(),
                 Forms\Components\FileUpload::make('featured_image')
                     ->image(),

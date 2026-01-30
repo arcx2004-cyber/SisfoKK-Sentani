@@ -1,80 +1,158 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { fetchPage, getImageUrl } from '../lib/api';
+
+const page = await fetchPage('profile');
+const pageTitle = page?.judul || 'Profile Sekolah';
+const pageContent = page?.konten || '<p>Konten belum tersedia.</p>';
+const pageImage = page?.featured_image
+  ? getImageUrl(page.featured_image, '')
+  : 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&h=400&fit=crop';
 ---
 
-<Layout title="Profile Sekolah">
-  <!-- Page Header -->
-  <section class="hero" style="min-height: 300px;">
+<Layout title={pageTitle}>
+  <!-- Changed Style: Removed specific background image to use default blue hero from Layout.css -->
+  <section class="hero" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
     <div class="hero-content">
       <span class="hero-badge">🏫 Tentang Kami</span>
-      <h1 class="hero-title">Profile Sekolah</h1>
-      <p class="hero-subtitle">Mengenal lebih dekat Sekolah Kristen Kalam Kudus Sentani</p>
+      <h1 class="hero-title">{pageTitle}</h1>
     </div>
   </section>
 
   <section class="section">
     <div class="container">
-      <div class="grid grid-2" style="gap: 4rem; align-items: center;">
-        <div>
-          <span class="section-badge">Sejarah</span>
-          <h2 class="section-title" style="text-align: left;">Tentang SKKK Sentani</h2>
-          <p style="color: var(--gray-600); line-height: 1.8; margin-bottom: 1.5rem;">
-            Sekolah Kristen Kalam Kudus Sentani didirikan dengan visi untuk menyediakan pendidikan berkualitas 
-            berbasis iman Kristiani di wilayah Sentani, Papua. Sejak berdiri, sekolah ini telah berkomitmen 
-            untuk mendidik generasi muda dengan kasih dan disiplin.
-          </p>
-          <p style="color: var(--gray-600); line-height: 1.8; margin-bottom: 1.5rem;">
-            Dengan motto <strong>"Dengan Kasih & Disiplin Meningkatkan Prestasi"</strong>, kami percaya bahwa 
-            pendidikan yang baik harus dilandasi oleh kasih sayang sekaligus disiplin yang membangun karakter.
-          </p>
-          <p style="color: var(--gray-600); line-height: 1.8;">
-            Saat ini, SKKK Sentani melayani tiga jenjang pendidikan: Taman Kanak-Kanak (TK), 
-            Sekolah Dasar (SD), dan Sekolah Menengah Pertama (SMP), dengan ratusan siswa yang 
-            aktif belajar setiap harinya.
-          </p>
+      <div class="profile-layout">
+        <div class="profile-content">
+          <!-- Content from Backend (Rich Text) -->
+          <article class="prose page-content" set:html={pageContent} />
         </div>
-        <div>
-          <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&h=400&fit=crop" 
-               alt="Gedung Sekolah" 
-               style="width: 100%; border-radius: var(--radius-xl); box-shadow: var(--shadow-xl);" />
+        <div class="profile-image-container">
+          <img src={pageImage}
+               alt={pageTitle}
+               class="rounded-image shadow-xl" />
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Values Section -->
-  <section class="section" style="background: var(--gray-100);">
+  <!-- Values Section (Static) -->
+  <section class="section values-section">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">Nilai-Nilai</span>
         <h2 class="section-title">Nilai-Nilai yang Kami Tanamkan</h2>
       </div>
 
-      <div class="grid grid-4">
-        <div class="card" style="text-align: center;">
-          <div class="card-icon" style="margin: 0 auto 1rem;">✝️</div>
-          <h3 class="card-title">Iman</h3>
-          <p class="card-desc">Berpegang teguh pada iman Kristiani dalam setiap aspek pendidikan</p>
+      <div class="values-grid">
+        <div class="value-card">
+          <div class="value-icon">✝️</div>
+          <h3 class="value-title">Iman</h3>
+          <p class="value-desc">Berpegang teguh pada iman Kristiani dalam setiap aspek pendidikan</p>
         </div>
-
-        <div class="card" style="text-align: center;">
-          <div class="card-icon" style="margin: 0 auto 1rem;">❤️</div>
-          <h3 class="card-title">Kasih</h3>
-          <p class="card-desc">Mendidik dengan kasih yang tulus seperti kasih Kristus</p>
+        <div class="value-card">
+          <div class="value-icon">❤️</div>
+          <h3 class="value-title">Kasih</h3>
+          <p class="value-desc">Mendidik dengan kasih yang tulus seperti kasih Kristus</p>
         </div>
-
-        <div class="card" style="text-align: center;">
-          <div class="card-icon" style="margin: 0 auto 1rem;">📏</div>
-          <h3 class="card-title">Disiplin</h3>
-          <p class="card-desc">Membangun karakter melalui kedisiplinan yang konsisten</p>
+        <div class="value-card">
+          <div class="value-icon">📏</div>
+          <h3 class="value-title">Disiplin</h3>
+          <p class="value-desc">Membangun karakter melalui kedisiplinan yang konsisten</p>
         </div>
-
-        <div class="card" style="text-align: center;">
-          <div class="card-icon" style="margin: 0 auto 1rem;">🏆</div>
-          <h3 class="card-title">Prestasi</h3>
-          <p class="card-desc">Mendorong siswa mencapai prestasi terbaik mereka</p>
+        <div class="value-card">
+          <div class="value-icon">🏆</div>
+          <h3 class="value-title">Prestasi</h3>
+          <p class="value-desc">Mendorong siswa mencapai prestasi terbaik mereka</p>
         </div>
       </div>
     </div>
   </section>
+  
+  <style>
+    .profile-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        align-items: start;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-layout {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        .profile-image-container {
+            order: -1; 
+        }
+    }
+
+    .values-section {
+        background: var(--gray-100);
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .value-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s;
+    }
+
+    .value-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .value-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: var(--primary-100);
+        width: 80px;
+        height: 80px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    .value-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-800);
+        margin-bottom: 0.5rem;
+    }
+
+    .value-desc {
+        color: var(--gray-600);
+        line-height: 1.6;
+    }
+
+    .page-content :global(h1),
+    .page-content :global(h2),
+    .page-content :global(h3) {
+      color: var(--primary-800);
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .page-content :global(p) {
+      color: var(--gray-600);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+    
+    .rounded-image {
+        border-radius: var(--radius-lg);
+        width: 100%;
+        height: auto;
+    }
+  </style>
 </Layout>

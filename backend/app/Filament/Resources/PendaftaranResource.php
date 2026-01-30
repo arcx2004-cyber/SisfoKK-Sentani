@@ -17,70 +17,81 @@ class PendaftaranResource extends BaseResource
 {
     protected static ?string $model = Pendaftaran::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
-    protected static ?string $navigationGroup = 'PPDB';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static ?int $navigationSort = 1;
-    protected static ?string $navigationLabel = 'Pendaftaran';
+    protected static ?string $navigationGroup = 'PPDB';
+    protected static ?string $navigationLabel = 'Pendaftaran Masuk';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Wizard::make([
-                    Forms\Components\Wizard\Step::make('Data Calon Siswa')
+                    Forms\Components\Wizard\Step::make('Data Peserta Didik')
                         ->schema([
                             Forms\Components\Select::make('ppdb_setting_id')
-                                ->relationship('ppdbSetting', 'id') // TODO: Check if we can show a better label logic later
-                                ->label('Gelombang PPDB') 
+                                ->relationship('ppdbSetting', 'judul')
+                                ->label('Gelombang PPDB')
                                 ->required(),
                             Forms\Components\TextInput::make('nomor_pendaftaran')
-                                ->disabled() 
-                                ->placeholder('Otomatis')
-                                ->label('No. Pendaftaran (Auto)'),
-                            Forms\Components\TextInput::make('nama_lengkap')->required(),
-                            Forms\Components\Select::make('jenis_kelamin')
-                                ->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])
+                                ->label('No. Registrasi')
+                                ->disabled()
+                                ->dehydrated(false)
+                                ->placeholder('Otomatis'),
+                            Forms\Components\TextInput::make('nama_lengkap')
                                 ->required(),
-                            Forms\Components\TextInput::make('tempat_lahir')->required(),
-                            Forms\Components\DatePicker::make('tanggal_lahir')->required(),
+                            Forms\Components\Select::make('jenis_kelamin')
+                                ->options([
+                                    'L' => 'Laki-laki',
+                                    'P' => 'Perempuan'
+                                ])->required(),
+                            Forms\Components\TextInput::make('tempat_lahir'),
+                            Forms\Components\DatePicker::make('tanggal_lahir'),
                             Forms\Components\Select::make('agama')
-                                ->options(['Islam' => 'Islam', 'Kristen' => 'Kristen', 'Katolik' => 'Katolik', 'Hindu' => 'Hindu', 'Buddha' => 'Buddha', 'Khonghucu' => 'Khonghucu']),
-                             Forms\Components\Textarea::make('alamat')->required()->columnSpanFull(),
+                                ->options([
+                                    'Kristen Protestan' => 'Kristen Protestan',
+                                    'Katolik' => 'Katolik',
+                                    'Islam' => 'Islam',
+                                    'Hindu' => 'Hindu',
+                                    'Budha' => 'Budha',
+                                    'Konghucu' => 'Konghucu'
+                                ]),
+                            Forms\Components\TextInput::make('alamat')->columnSpanFull(),
+                            Forms\Components\TextInput::make('asal_sekolah'),
+                            Forms\Components\FileUpload::make('pas_foto')
+                                ->label('Pas Foto (Ukuran 4x6)')
+                                ->image()
+                                ->directory('pas-foto-ppdb')
+                                ->imageEditor()
+                                ->maxSize(2048)
+                                ->columnSpanFull(),
                         ])->columns(2),
-                        
-                    Forms\Components\Wizard\Step::make('Data Orang Tua / Wali')
+                    Forms\Components\Wizard\Step::make('Data Orang Tua')
                         ->schema([
-                            Forms\Components\TextInput::make('nama_ayah')->required(),
+                            Forms\Components\TextInput::make('nama_ayah'),
                             Forms\Components\TextInput::make('pekerjaan_ayah'),
-                            Forms\Components\TextInput::make('nama_ibu')->required(),
+                            Forms\Components\TextInput::make('nama_ibu'),
                             Forms\Components\TextInput::make('pekerjaan_ibu'),
-                            Forms\Components\TextInput::make('no_telepon_ortu')->tel()->required()->label('No. HP Ortu'),
-                            Forms\Components\TextInput::make('no_wa')->tel()->required()->label('No. WhatsApp'),
-                            Forms\Components\TextInput::make('email')->email()->required()->label('Email Ortu'),
+                            Forms\Components\TextInput::make('no_wa')->label('No WhatsApp (Aktif)'),
+                            Forms\Components\TextInput::make('email')->email(),
                         ])->columns(2),
-                        
-                    Forms\Components\Wizard\Step::make('Asal Sekolah & Status')
+                    Forms\Components\Wizard\Step::make('Verifikasi & Status')
                         ->schema([
-                            Forms\Components\TextInput::make('asal_sekolah')->label('Nama Sekolah Asal'),
-                            Forms\Components\Hidden::make('status')->default('pending'),
-                            
-                            Forms\Components\Section::make('Verifikasi Panitia')
-                                ->schema([
-                                     Forms\Components\Select::make('status')
-                                        ->options([
-                                            'pending' => 'Pending',
-                                            'verifikasi' => 'Sedang Diverifikasi',
-                                            'diterima' => 'Diterima',
-                                            'ditolak' => 'Ditolak',
-                                        ])
-                                        ->default('pending')
-                                        ->required(),
-                                     Forms\Components\Textarea::make('catatan_admin')
-                                        ->label('Catatan Panitia'),
+                             Forms\Components\Select::make('status')
+                                ->options([
+                                    'baru' => 'Baru Mendaftar',
+                                    'verifikasi_berkas' => 'Verifikasi Berkas',
+                                    'test_seleksi' => 'Test Seleksi',
+                                    'wawancara' => 'Wawancara',
+                                    'diterima' => 'Diterima',
+                                    'ditolak' => 'Ditolak'
                                 ])
-                                ->visible(fn () => auth()->user() && (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('panitia_ppdb'))),
-                        ]),
-                        
+                                ->default('baru')
+                                ->required(),
+                            Forms\Components\Textarea::make('catatan_admin')
+                                ->label('Catatan Panitia'),
+                        ])
+                        ->visible(fn () => auth()->user() && (auth()->user()->hasRole('super_admin') || auth()->user()->hasRole('panitia_ppdb'))),
                     Forms\Components\Wizard\Step::make('Berkas Dokumen')
                         ->schema([
                              Forms\Components\Repeater::make('dokumenPendaftarans')
@@ -111,43 +122,21 @@ class PendaftaranResource extends BaseResource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('ppdbSetting.id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('nomor_pendaftaran')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('nama_lengkap')
-                    ->searchable(),
+                Tables\Columns\ImageColumn::make('pas_foto')->circular(),
+                Tables\Columns\TextColumn::make('nomor_pendaftaran')->searchable(),
+                Tables\Columns\TextColumn::make('nama_lengkap')->searchable(),
                 Tables\Columns\TextColumn::make('jenis_kelamin'),
-                Tables\Columns\TextColumn::make('tempat_lahir')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('tanggal_lahir')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('agama')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('asal_sekolah')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('no_wa')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('nama_ayah')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('pekerjaan_ayah')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('nama_ibu')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('pekerjaan_ibu')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('no_telepon_ortu')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('asal_sekolah')->searchable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'baru' => 'gray',
+                        'verifikasi_berkas' => 'warning',
+                        'diterima' => 'success',
+                        'ditolak' => 'danger',
+                        default => 'primary',
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -172,11 +161,12 @@ class PendaftaranResource extends BaseResource
                                     'email' => $record->email,
                                     'password' => \Illuminate\Support\Facades\Hash::make($password),
                                     'is_active' => true,
+                                    'avatar_url' => $record->pas_foto, // Set Avatar from Pas Foto
                                 ]);
                                 $user->assignRole('siswa');
 
                                 // 2. Get Unit ID from PpdbSetting
-                                $unitId = $record->ppdbSetting->unit_id ?? 1; // Fallback or strict?
+                                $unitId = $record->ppdbSetting->unit_id ?? 1; 
 
                                 // 3. Create Siswa
                                 \App\Models\Siswa::create([
@@ -189,7 +179,7 @@ class PendaftaranResource extends BaseResource
                                     'agama' => $record->agama,
                                     'alamat' => $record->alamat,
                                     'asal_sekolah' => $record->asal_sekolah,
-                                    'email_ortu' => $record->email, // Using student email as contact for now
+                                    'email_ortu' => $record->email, 
                                     'no_telepon' => $record->no_wa,
                                     'nama_ayah' => $record->nama_ayah,
                                     'pekerjaan_ayah' => $record->pekerjaan_ayah,
@@ -198,6 +188,7 @@ class PendaftaranResource extends BaseResource
                                     'no_telepon_ortu' => $record->no_telepon_ortu,
                                     'status' => 'aktif',
                                     'tanggal_masuk' => now(),
+                                    'foto' => $record->pas_foto, // Set Siswa Photo from Pas Foto
                                 ]);
 
                                 // 4. Update Pendaftaran Status

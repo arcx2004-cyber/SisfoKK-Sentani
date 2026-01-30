@@ -1,0 +1,101 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchGalleries, getImageUrl } from '../../lib/api';
+
+const galleries = await fetchGalleries();
+const displayGalleries = galleries; 
+---
+
+<Layout title=Galeri>
+  <section class=hero style=min-height: 300px;>
+    <div class=hero-content>
+      <span class=hero-badge>📷 Dokumentasi</span>
+      <h1 class=hero-title>Galeri Foto</h1>
+      <p class=hero-subtitle>Dokumentasi kegiatan dan momen berharga di Sekolah Kalam Kudus</p>
+    </div>
+  </section>
+
+  <section class=section>
+    <div class=container>
+      <div class=section-header>
+        <span class=section-badge>Koleksi Foto</span>
+        <h2 class=section-title>Album Galeri</h2>
+      </div>
+
+      {displayGalleries.length === 0 ? (
+          <p class=text-center text-gray-500>Belum ada album galeri.</p>
+      ) : (
+      <div class=gallery-grid>
+        {displayGalleries.map((gallery) => (
+          <div class=card gallery-card>
+            <a href={`/galeri/${gallery.id}`} class=gallery-link>
+            <div class=gallery-image-wrapper>
+                <img 
+                  src={gallery.photos && gallery.photos.length > 0 ? getImageUrl(gallery.photos[0].gambar, '') : 'https://via.placeholder.com/400x250?text=No+Image'} 
+                  alt={gallery.judul} 
+                />
+            </div>
+            <div class=gallery-content>
+              <h3 class=card-title>{gallery.judul}</h3>
+              <p class=card-desc>{gallery.deskripsi || 'Album foto kegiatan sekolah'}</p>
+              {gallery.photos && (
+                <p class=gallery-meta>
+                  📸 {gallery.photos.length} foto
+                </p>
+              )}
+            </div>
+            </a>
+          </div>
+        ))}
+      </div>
+      )}
+    </div>
+  </section>
+  
+  <style>
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+    .gallery-card {
+        padding: 0 !important;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .gallery-link {
+        text-decoration: none; 
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .gallery-image-wrapper {
+        height: 200px;
+        overflow: hidden;
+    }
+    .gallery-image-wrapper img {
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    .gallery-card:hover img {
+        transform: scale(1.05);
+    }
+    .gallery-content {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .gallery-meta {
+        color: var(--gray-500); 
+        font-size: 0.875rem; 
+        margin-top: auto;
+        padding-top: 1rem;
+    }
+  </style>
+</Layout>

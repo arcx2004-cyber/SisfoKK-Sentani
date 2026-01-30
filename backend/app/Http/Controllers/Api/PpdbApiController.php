@@ -15,8 +15,15 @@ class PpdbApiController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        // Get unit code to determine required documents
+        $ppdbSetting = PpdbSetting::with('unit')->find($request->ppdb_setting_id);
+        $unitCode = $ppdbSetting?->unit?->kode ?? '';
+        
+        // Base validation rules
+        $rules = [
             'ppdb_setting_id' => 'required|exists:ppdb_settings,id',
+            'jenis_pendaftaran' => 'required|in:Murid Baru,Mutasi',
+            'tingkat' => 'required|string|max:50',
             'nama_lengkap' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
             'tempat_lahir' => 'required|string|max:255',
@@ -31,7 +38,20 @@ class PpdbApiController extends Controller
             'nama_ibu' => 'required|string|max:255',
             'pekerjaan_ibu' => 'nullable|string|max:255',
             'no_telepon_ortu' => 'required|string|max:20',
-        ]);
+            // Document uploads
+            'akta_kelahiran' => 'required|file|max:2048|mimes:pdf,jpg,jpeg,png',
+            'kartu_keluarga' => 'required|file|max:2048|mimes:pdf,jpg,jpeg,png',
+            'pas_foto'       => 'required|file|max:2048|mimes:jpg,jpeg,png',
+        ];
+        
+        // Add ijazah requirement for SD and SMP
+        if (in_array($unitCode, ['SD', 'SMP'])) {
+            $rules['ijazah_skhu'] = 'required|file|max:2048|mimes:pdf,jpg,jpeg,png';
+        } else {
+            $rules['ijazah_skhu'] = 'nullable|file|max:2048|mimes:pdf,jpg,jpeg,png';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -42,8 +62,7 @@ class PpdbApiController extends Controller
         }
 
         // Check if PPDB is still open
-        $ppdbSetting = PpdbSetting::find($request->ppdb_setting_id);
-        if (!$ppdbSetting->isOpen()) {
+        if (!$ppdbSetting || !$ppdbSetting->isOpen()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Pendaftaran sudah ditutup'
@@ -52,12 +71,49 @@ class PpdbApiController extends Controller
 
         // Generate registration number
         $nomorPendaftaran = Pendaftaran::generateNomorPendaftaran();
+        
+        // Prepare data
+        $data = $request->except(['akta_kelahiran', 'kartu_keluarga', 'ijazah_skhu', 'unit_code', 'pas_foto']);
+        $data['nomor_pendaftaran'] = $nomorPendaftaran;
+        $data['status'] = 'pending';
 
-        $pendaftaran = Pendaftaran::create([
-            ...$request->except('dokumen'),
-            'nomor_pendaftaran' => $nomorPendaftaran,
-            'status' => 'pending',
-        ]);
+        // Save Pas Foto
+        if ($request->hasFile('pas_foto')) {
+            $data['pas_foto'] = $request->file('pas_foto')->store('pas-foto-ppdb', 'public');
+        }
+
+        $pendaftaran = Pendaftaran::create($data);
+
+        // Upload documents
+        $dokumenTypes = [
+            'akta_kelahiran' => 'akta_lahir',
+            'kartu_keluarga' => 'kartu_keluarga',
+            'ijazah_skhu' => 'ijazah',
+        ];
+
+        foreach ($dokumenTypes as $fieldName => $jenisDokumen) {
+            if ($request->hasFile($fieldName)) {
+                $file = $request->file($fieldName);
+                $path = $file->store('ppdb/dokumen/' . $pendaftaran->id, 'public');
+                
+                DokumenPendaftaran::create([
+                    'pendaftaran_id' => $pendaftaran->id,
+                    'jenis_dokumen' => $jenisDokumen,
+                    'nama_file' => $file->getClientOriginalName(),
+                    'path' => $path,
+                ]);
+            }
+        }
+        
+        // Also save Pas Foto as Dokumen (optional, but good for consistency/backup)
+        if ($request->hasFile('pas_foto')) {
+             DokumenPendaftaran::create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'jenis_dokumen' => 'foto',
+                'nama_file' => $request->file('pas_foto')->getClientOriginalName(),
+                'path' => $data['pas_foto'],
+            ]);
+        }
 
         return response()->json([
             'success' => true,

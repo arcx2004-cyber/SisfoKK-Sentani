@@ -1,0 +1,65 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchKegiatan, fetchKegiatanDetail, formatDate, getImageUrl } from '../../lib/api';
+
+export async function getStaticPaths() {
+  const kegiatan = await fetchKegiatan();
+  return kegiatan.map((item) => ({
+    params: { slug: item.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const item = await fetchKegiatanDetail(slug);
+
+if (!item) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout title={item.title}>
+  <section class=hero style=min-height: 300px; position: relative; overflow: hidden;>
+    {item.image && (
+        <div style={`position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('${getImageUrl(item.image, '')}'); background-size: cover; background-position: center; z-index: -1;`}></div>
+    )}
+    <div class=hero-content>
+      <span class=hero-badge>📅 Agenda Detail</span>
+      <h1 class=hero-title>{item.title}</h1>
+    </div>
+  </section>
+
+  <section class=section>
+    <div class=container>
+      <div class=grid grid-2 style=gap: 2rem; align-items: start; grid-template-columns: 1fr 2fr;>
+        <div class=card>
+             <h3 class=card-title>Info Kegiatan</h3>
+             <ul style=list-style: none; padding: 0;>
+                <li style=margin-bottom: 1.5rem;>
+                    <strong style=display: block; color: var(--primary-600); margin-bottom: 0.25rem;>📅 Tanggal</strong>
+                    {formatDate(item.tanggal_mulai)} 
+                    {item.tanggal_selesai && <span> - {formatDate(item.tanggal_selesai)}</span>}
+                </li>
+                {item.lokasi && (
+                <li style=margin-bottom: 1.5rem;>
+                    <strong style=display: block; color: var(--primary-600); margin-bottom: 0.25rem;>📍 Lokasi</strong>
+                    {item.lokasi}
+                </li>
+                )}
+             </ul>
+        </div>
+        
+        <div>
+            <article class=prose set:html={item.content} />
+        </div>
+      </div>
+
+      <div class=text-center style=margin-top: 4rem;>
+        <a href=/kegiatan class=btn btn-outline>← Kembali ke Jadwal</a>
+      </div>
+    </div>
+  </section>
+  
+  <style>
+    .prose :global(p) { line-height: 1.8; margin-bottom: 1.5rem; color: var(--gray-600); }
+  </style>
+</Layout>

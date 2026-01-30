@@ -1,11 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { fetchSliders, fetchUnits, fetchNews, getUnitIcon, formatDate, getImageUrl } from '../lib/api';
+import { fetchSliders, fetchUnits, fetchNews, fetchSettings, getUnitIcon, formatDate, getImageUrl } from '../lib/api';
 
 // Fetch data from API
-const sliders = await fetchSliders();
+const settings = await fetchSettings();
+const allSliders = await fetchSliders();
+const sliders = allSliders.filter(s => s.is_active);
 const units = await fetchUnits();
 const news = await fetchNews(3);
+
+const activeSlider = sliders.length > 0 ? sliders[0] : null;
 
 // Fallback data for units if API returns empty
 const displayUnits = units.length > 0 ? units : [
@@ -16,47 +20,73 @@ const displayUnits = units.length > 0 ? units : [
 
 // Fallback news if API returns empty
 const displayNews = news.length > 0 ? news : [
-  { id: 1, title: 'PPDB 2026/2027 Resmi Dibuka', slug: 'ppdb-2026', excerpt: 'Pendaftaran Peserta Didik Baru untuk tahun ajaran 2026/2027 telah resmi dibuka...', image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop', published_at: '2026-01-12' },
-  { id: 2, title: 'Siswa Raih Medali Olimpiade Sains', slug: 'olimpiade-sains', excerpt: 'Siswa SMP Kalam Kudus berhasil meraih medali emas dalam Olimpiade Sains Nasional...', image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=200&fit=crop', published_at: '2026-01-08' },
-  { id: 3, title: 'Perayaan Natal Bersama', slug: 'natal-2025', excerpt: 'Seluruh civitas akademika merayakan Natal bersama dengan penuh sukacita...', image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop', published_at: '2025-12-25' },
+  { id: 1, judul: 'PPDB 2026/2027 Resmi Dibuka', slug: 'ppdb-2026', ringkasan: 'Pendaftaran Peserta Didik Baru untuk tahun ajaran 2026/2027 telah resmi dibuka...', featured_image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop', published_at: '2026-01-12' },
+  { id: 2, judul: 'Siswa Raih Medali Olimpiade Sains', slug: 'olimpiade-sains', ringkasan: 'Siswa SMP Kalam Kudus berhasil meraih medali emas dalam Olimpiade Sains Nasional...', featured_image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=200&fit=crop', published_at: '2026-01-08' },
+  { id: 3, judul: 'Perayaan Natal Bersama', slug: 'natal-2025', ringkasan: 'Seluruh civitas akademika merayakan Natal bersama dengan penuh sukacita...', featured_image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop', published_at: '2025-12-25' },
 ];
 ---
 
 <Layout title="Home">
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <span class="hero-badge">🎓 Selamat Datang di</span>
-      <h1 class="hero-title">Sekolah Kristen Kalam Kudus Sentani</h1>
-      <p class="hero-subtitle">"Dengan Kasih & Disiplin Meningkatkan Prestasi"</p>
-      <div class="hero-buttons">
-        <a href="/ppdb" class="btn btn-primary">Daftar PPDB 2026</a>
-        <a href="/profile" class="btn btn-outline">Tentang Kami</a>
-      </div>
+  <!-- Hero Slider -->
+  <section class="hero-slider swiper">
+    <div class="swiper-wrapper">
+      {sliders.length > 0 ? sliders.map((slider) => (
+        <div class="swiper-slide">
+          <div class="hero" style={`background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${getImageUrl(slider.gambar, '')}'); background-size: cover; background-position: center;`}>
+            <div class="hero-content">
+              <span class="hero-badge">🎓 Selamat Datang di</span>
+              <h1 class="hero-title">{slider.judul}</h1>
+              <p class="hero-subtitle">"{slider.deskripsi || settings.school_motto || 'Dengan Kasih & Disiplin Meningkatkan Prestasi'}"</p>
+              <div class="hero-buttons">
+                <a href={slider.link || '/ppdb'} class="btn btn-primary">Daftar PPDB 2026</a>
+                <a href="/profile" class="btn btn-outline">Tentang Kami</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )) : (
+        <div class="swiper-slide">
+          <div class="hero">
+            <div class="hero-content">
+              <span class="hero-badge">🎓 Selamat Datang di</span>
+              <h1 class="hero-title">{settings.school_name || 'Sekolah Kristen Kalam Kudus Sentani'}</h1>
+              <p class="hero-subtitle">"{settings.school_motto || 'Dengan Kasih & Disiplin Meningkatkan Prestasi'}"</p>
+              <div class="hero-buttons">
+                <a href="/ppdb" class="btn btn-primary">Daftar PPDB 2026</a>
+                <a href="/profile" class="btn btn-outline">Tentang Kami</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    <!-- Swiper controls -->
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-next"></div>
+    <div class="swiper-button-prev"></div>
   </section>
 
   <!-- Stats Section -->
   <section class="stats">
     <div class="container">
-      <div class="stats-grid">
-        <div class="stat">
+      <ul class="stats-grid">
+        <li class="stat">
           <div class="stat-number">{displayUnits.length}</div>
           <div class="stat-label">Unit Sekolah</div>
-        </div>
-        <div class="stat">
+        </li>
+        <li class="stat">
           <div class="stat-number">50+</div>
           <div class="stat-label">Tenaga Pendidik</div>
-        </div>
-        <div class="stat">
+        </li>
+        <li class="stat">
           <div class="stat-number">500+</div>
           <div class="stat-label">Siswa Aktif</div>
-        </div>
-        <div class="stat">
+        </li>
+        <li class="stat">
           <div class="stat-number">30+</div>
           <div class="stat-label">Tahun Berdiri</div>
-        </div>
-      </div>
+        </li>
+      </ul>
     </div>
   </section>
 
@@ -75,6 +105,31 @@ const displayNews = news.length > 0 ? news : [
             <div class="unit-icon">{getUnitIcon(unit.kode)}</div>
             <h3 class="unit-name">{unit.nama}</h3>
             <p class="unit-desc">{unit.deskripsi || `Unit ${unit.nama} Sekolah Kalam Kudus Sentani`}</p>
+            
+            <ul class="card-list">
+              {unit.kode === 'TK' && (
+                <>
+                  <li>Pendidikan berbasis kasih</li>
+                  <li>Pengembangan motorik & kreativitas</li>
+                  <li>Pembentukan karakter sejak dini</li>
+                </>
+              )}
+              {unit.kode === 'SD' && (
+                <>
+                  <li>Kurikulum Nasional Terpadu</li>
+                  <li>Program penguatan karakter</li>
+                  <li>Ekstrakurikuler yang beragam</li>
+                </>
+              )}
+              {unit.kode === 'SMP' && (
+                <>
+                  <li>Persiapan akademik unggulan</li>
+                  <li>Pengembangan minat dan bakat</li>
+                  <li>Kepemimpinan & kemandirian</li>
+                </>
+              )}
+            </ul>
+
             <a href={`/unit/${unit.kode.toLowerCase()}`} class="btn btn-primary">Selengkapnya</a>
           </div>
         ))}
@@ -100,6 +155,11 @@ const displayNews = news.length > 0 ? news : [
           </div>
           <h3 class="card-title">Kurikulum Terpadu</h3>
           <p class="card-desc">Menggabungkan kurikulum nasional dengan nilai-nilai Kristiani</p>
+          <ul class="feature-list">
+            <li>Kurikulum Nasional</li>
+            <li>Nilai-nilai Kristiani</li>
+            <li>Pembelajaran Kontekstual</li>
+          </ul>
         </div>
 
         <div class="card">
@@ -110,6 +170,11 @@ const displayNews = news.length > 0 ? news : [
           </div>
           <h3 class="card-title">Guru Berkualitas</h3>
           <p class="card-desc">Tenaga pengajar profesional dan berdedikasi tinggi</p>
+          <ul class="feature-list">
+            <li>Sertifikasi Pendidik</li>
+            <li>Pelatihan Berkala</li>
+            <li>Panggilan Pelayanan</li>
+          </ul>
         </div>
 
         <div class="card">
@@ -120,6 +185,11 @@ const displayNews = news.length > 0 ? news : [
           </div>
           <h3 class="card-title">Pendidikan Karakter</h3>
           <p class="card-desc">Membentuk karakter Kristiani yang kuat dan bermoral</p>
+          <ul class="feature-list">
+            <li>Integritas</li>
+            <li>Disiplin Diri</li>
+            <li>Kepedulian Sosial</li>
+          </ul>
         </div>
 
         <div class="card">
@@ -130,6 +200,11 @@ const displayNews = news.length > 0 ? news : [
           </div>
           <h3 class="card-title">Fasilitas Lengkap</h3>
           <p class="card-desc">Ruang kelas nyaman, laboratorium, dan perpustakaan</p>
+          <ul class="feature-list">
+            <li>Gedung Milik Sendiri</li>
+            <li>Lab Komputer & Sains</li>
+            <li>Lapangan Olahraga</li>
+          </ul>
         </div>
       </div>
     </div>
@@ -156,11 +231,11 @@ const displayNews = news.length > 0 ? news : [
       <div class="grid grid-3">
         {displayNews.map((item) => (
           <article class="news-card">
-            <img src={getImageUrl(item.image, 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop')} alt={item.title} />
+            <img src={getImageUrl(item.featured_image, 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop')} alt={item.judul} />
             <div class="news-card-content">
               <span class="news-card-date">{formatDate(item.published_at)}</span>
-              <h3 class="news-card-title">{item.title}</h3>
-              <p class="news-card-excerpt">{item.excerpt || item.title}</p>
+              <h3 class="news-card-title">{item.judul}</h3>
+              <p class="news-card-excerpt">{item.ringkasan || item.judul}</p>
             </div>
           </article>
         ))}
@@ -172,3 +247,119 @@ const displayNews = news.length > 0 ? news : [
     </div>
   </section>
 </Layout>
+
+<script is:inline>
+  // Initialize Swiper
+  document.addEventListener('DOMContentLoaded', function() {
+    new Swiper('.hero-slider', {
+      loop: true,
+      autoplay: {
+        delay: 5000,
+        disableOnInteraction: false,
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      effect: 'fade',
+      fadeEffect: {
+        crossFade: true
+      },
+    });
+  });
+</script>
+
+<style>
+  .hero-slider {
+    width: 100%;
+    height: auto;
+  }
+  
+  .hero-slider :global(.swiper-pagination-bullet) {
+    background: white;
+    opacity: 0.5;
+  }
+  
+  .hero-slider :global(.swiper-pagination-bullet-active) {
+    background: var(--primary-500);
+    opacity: 1;
+  }
+  
+  .hero-slider :global(.swiper-button-next),
+  .hero-slider :global(.swiper-button-prev) {
+    color: white;
+    background: rgba(0, 0, 0, 0.2);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+  }
+  
+  .hero-slider :global(.swiper-button-next:after),
+  .hero-slider :global(.swiper-button-prev:after) {
+    font-size: 1.5rem;
+  }
+
+  .card-list, .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.25rem 0;
+    text-align: left;
+  }
+  
+  .card-list li, .feature-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.625rem;
+    color: var(--gray-600);
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  
+  .card-list li::before, .feature-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: var(--primary-500);
+    font-weight: 700;
+  }
+
+  .stats-grid {
+    list-style: none;
+  }
+
+  .stat {
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    padding: 2.5rem 1.5rem;
+    border-radius: var(--radius-lg);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+  }
+
+  .stat:hover {
+    border-color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Adjustments for better spacing with lists */
+  .unit-card {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .unit-card .btn {
+    margin-top: auto;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

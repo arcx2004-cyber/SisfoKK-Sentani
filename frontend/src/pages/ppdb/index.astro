@@ -70,6 +70,25 @@ import Layout from '../../layouts/Layout.astro';
 
         <form id="ppdbForm">
           <input type="hidden" id="ppdb_setting_id" name="ppdb_setting_id" />
+          <input type="hidden" id="selected_unit_code" name="unit_code" />
+
+          <h3 style="color: var(--primary-700); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-200);">📋 Data Pendaftaran</h3>
+          <div class="grid grid-2" style="gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Jenis Pendaftaran *</label>
+              <select name="jenis_pendaftaran" id="jenisPendaftaran" required class="form-input">
+                <option value="">Pilih Jenis Pendaftaran</option>
+                <option value="Murid Baru">Murid Baru</option>
+                <option value="Mutasi">Mutasi</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Tingkat *</label>
+              <select name="tingkat" id="tingkatSelect" required class="form-input">
+                <option value="">Pilih Tingkat</option>
+              </select>
+            </div>
+          </div>
 
           <h3 style="color: var(--primary-700); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-200);">📋 Data Calon Siswa</h3>
           
@@ -95,8 +114,16 @@ import Layout from '../../layouts/Layout.astro';
               <input type="date" name="tanggal_lahir" required class="form-input" />
             </div>
             <div>
-              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Agama</label>
-              <input type="text" name="agama" class="form-input" placeholder="Agama" />
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Agama *</label>
+              <select name="agama" required class="form-input">
+                <option value="">Pilih Agama</option>
+                <option value="Kristen Protestan">Kristen Protestan</option>
+                <option value="Katolik">Katolik</option>
+                <option value="Islam">Islam</option>
+                <option value="Hindu">Hindu</option>
+                <option value="Buddha">Buddha</option>
+                <option value="Konghucu">Konghucu</option>
+              </select>
             </div>
             <div>
               <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Asal Sekolah</label>
@@ -147,7 +174,44 @@ import Layout from '../../layouts/Layout.astro';
             </div>
           </div>
 
-          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+          <h3 style="color: var(--primary-700); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-200);">📎 Upload Berkas</h3>
+          
+          <input type="hidden" id="selected_unit_code" name="unit_code" />
+          
+          <div style="margin-bottom: 2rem;">
+            <div style="background: var(--primary-50); padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem;">
+              <p style="color: var(--primary-700); font-weight: 600; margin-bottom: 0.5rem;">📋 Persyaratan Berkas:</p>
+              <ul id="dokumenRequirements" style="color: var(--gray-600); margin: 0; padding-left: 1.5rem;">
+                <li>Akta Kelahiran</li>
+                <li>Kartu Keluarga (KK)</li>
+              </ul>
+            </div>
+
+            <div class="grid grid-2" style="gap: 1rem;">
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Pas Foto (Ukuran 4x6) *</label>
+                <input type="file" name="pas_foto" required accept=".jpg,.jpeg,.png" class="form-input file-input" />
+                <small style="color: var(--gray-500);">Format: JPG, PNG (Maks. 2MB). Wajah terlihat jelas.</small>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Akta Kelahiran *</label>
+                <input type="file" name="akta_kelahiran" required accept=".pdf,.jpg,.jpeg,.png" class="form-input file-input" />
+                <small style="color: var(--gray-500);">Format: PDF, JPG, PNG (Maks. 2MB)</small>
+              </div>
+              <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Kartu Keluarga (KK) *</label>
+                <input type="file" name="kartu_keluarga" required accept=".pdf,.jpg,.jpeg,.png" class="form-input file-input" />
+                <small style="color: var(--gray-500);">Format: PDF, JPG, PNG (Maks. 2MB)</small>
+              </div>
+              <div id="ijazahField" style="display: none;" class="grid-2-span">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Ijazah / SKHU *</label>
+                <input type="file" name="ijazah_skhu" accept=".pdf,.jpg,.jpeg,.png" class="form-input file-input" id="ijazahInput" />
+                <small style="color: var(--gray-500);">Format: PDF, JPG, PNG (Maks. 2MB)</small>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;" id="submitBtn">
             Kirim Pendaftaran
           </button>
         </form>
@@ -191,9 +255,82 @@ import Layout from '../../layouts/Layout.astro';
       border-color: var(--primary-500);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
+    .file-input {
+      padding: 0.5rem;
+      background: var(--gray-50);
+      cursor: pointer;
+    }
+    .file-input::file-selector-button {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: var(--primary-600);
+      color: white;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-right: 1rem;
+      transition: background 0.2s;
+    }
+    .file-input::file-selector-button:hover {
+      background: var(--primary-700);
+    }
     .grid-2-span {
       grid-column: span 2;
     }
+    .unit-info-sections {
+      text-align: left;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+      border-top: 1px solid var(--gray-100);
+      padding-top: 1rem;
+    }
+    .info-section {
+      margin-bottom: 1.25rem;
+    }
+    .info-section-title {
+      color: var(--primary-700);
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .info-section-content {
+      color: var(--gray-600);
+      line-height: 1.6;
+    }
+    .info-section-content p {
+      margin-bottom: 0.5rem;
+    }
+    .info-section-content ul, .info-section-content ol {
+      padding-left: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .unit-fee {
+      margin: 1rem 0 1.5rem;
+      padding: 1rem;
+      background: var(--primary-50);
+      border-radius: var(--radius);
+      color: var(--primary-800);
+      text-align: center;
+    }
+    .unit-fee-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary-600);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+    }
+    .unit-fee-value {
+      font-size: 1.25rem;
+      font-weight: 800;
+      display: block;
+    }
+
     @media (max-width: 640px) {
       .grid-2-span {
         grid-column: span 1;
@@ -202,7 +339,7 @@ import Layout from '../../layouts/Layout.astro';
   </style>
 
   <script>
-    const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    const API_BASE = import.meta.env.PUBLIC_API_URL || 'https://skkksentani.web.id/api/v1';
     let ppdbData = [];
 
     async function loadPpdbStatus() {
@@ -215,16 +352,20 @@ import Layout from '../../layouts/Layout.astro';
         if (result.success) {
           ppdbData = result.data;
 
+          console.log('PPDB Data:', ppdbData); 
           if (result.is_any_open) {
             showOpenState();
           } else {
+            console.log('No open PPDB found');
             showClosedState();
           }
         } else {
+          console.error('API returned success:false');
           showClosedState();
         }
       } catch (error) {
         console.error('Error loading PPDB status:', error);
+        // alert('Error loading PPDB: ' + error.message); // Debugging
         document.getElementById('loadingState').style.display = 'none';
         showClosedState();
       }
@@ -269,10 +410,28 @@ import Layout from '../../layouts/Layout.astro';
           <div class="unit-icon">${getUnitIcon(ppdb.unit?.kode)}</div>
           <h3 class="unit-name">${ppdb.unit?.nama || 'Unit'}</h3>
           <p class="unit-desc">Tahun Ajaran ${ppdb.tahun_ajaran?.nama || ''}</p>
-          <p style="margin: 1rem 0; color: var(--gray-600);">
-            <strong>Biaya:</strong> Rp ${formatNumber(ppdb.biaya_pendaftaran || 0)}
-          </p>
-          <button class="btn btn-primary daftar-btn" data-id="${ppdb.id}" data-unit="${encodeURIComponent(ppdb.unit?.nama || 'Unit')}">
+          
+          <div class="unit-info-sections">
+            ${ppdb.alur_pendaftaran ? `
+              <div class="info-section">
+                <h4 class="info-section-title"><span>🛤️</span> Alur Pendaftaran</h4>
+                <div class="info-section-content">${ppdb.alur_pendaftaran}</div>
+              </div>
+            ` : ''}
+            ${ppdb.persyaratan ? `
+              <div class="info-section">
+                <h4 class="info-section-title"><span>📋</span> Persyaratan</h4>
+                <div class="info-section-content">${ppdb.persyaratan}</div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="unit-fee">
+            <span class="unit-fee-label">Biaya Pendaftaran</span>
+            <span class="unit-fee-value">Rp ${formatNumber(ppdb.biaya_pendaftaran || 0)}</span>
+          </div>
+
+          <button class="btn btn-primary daftar-btn" data-id="${ppdb.id}" data-unit="${encodeURIComponent(ppdb.unit?.nama || 'Unit')}" data-unit-code="${ppdb.unit?.kode || ''}">
             Daftar Sekarang
           </button>
         </div>
@@ -285,18 +444,80 @@ import Layout from '../../layouts/Layout.astro';
         btn.addEventListener('click', function() {
           const id = this.getAttribute('data-id');
           const unitName = decodeURIComponent(this.getAttribute('data-unit'));
-          showForm(id, unitName);
+          const unitCode = this.getAttribute('data-unit-code');
+          showForm(id, unitName, unitCode);
         });
       });
     }
 
-    function showForm(ppdbSettingId, unitName) {
+    function showForm(ppdbSettingId, unitName, unitCode) {
       document.getElementById('openState').style.display = 'none';
       document.getElementById('formSection').style.display = 'block';
       document.getElementById('ppdb_setting_id').value = ppdbSettingId;
       document.getElementById('selectedUnitName').textContent = unitName;
+      document.getElementById('selected_unit_code').value = unitCode;
+      document.getElementById('jenisPendaftaran').value = ''; // Reset to placeholder
+      
+      if (unitCode === 'TK') {
+        ijazahField.style.display = 'none';
+        ijazahInput.removeAttribute('required');
+        requirements.innerHTML = '<li>Akta Kelahiran</li><li>Kartu Keluarga (KK)</li>';
+      } else {
+        // SD or SMP
+        ijazahField.style.display = 'block';
+        ijazahInput.setAttribute('required', 'required');
+        requirements.innerHTML = '<li>Akta Kelahiran</li><li>Kartu Keluarga (KK)</li><li>Ijazah / SKHU</li>';
+      }
+
+      // Initial populate of tingkat options (will be empty because jenisPendaftaran is reset)
+      updateTingkatOptions();
+      
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    function updateTingkatOptions() {
+      const unitCode = document.getElementById('selected_unit_code').value;
+      const jenisPendaftaran = document.getElementById('jenisPendaftaran').value;
+      const tingkatSelect = document.getElementById('tingkatSelect');
+      
+      let options = [];
+
+      if (!jenisPendaftaran && (unitCode === 'SD' || unitCode === 'SMP')) {
+        options = []; // No options until type is selected for SD/SMP
+      } else if (unitCode === 'TK') {
+        options = [
+          { value: 'KB (umur 3 tahun)', label: 'KB (umur 3 tahun)' },
+          { value: 'TK A (umur 4 Tahun)', label: 'TK A (umur 4 Tahun)' },
+          { value: 'TK B (umur 5 Tahun)', label: 'TK B (umur 5 Tahun)' }
+        ];
+      } else if (unitCode === 'SD') {
+        if (jenisPendaftaran === 'Murid Baru') {
+          options = [{ value: 'Kelas 1', label: 'Kelas 1' }];
+        } else if (jenisPendaftaran === 'Mutasi') {
+          options = [
+            { value: 'Kelas 2', label: 'Kelas 2' },
+            { value: 'Kelas 3', label: 'Kelas 3' },
+            { value: 'Kelas 4', label: 'Kelas 4' },
+            { value: 'Kelas 5', label: 'Kelas 5' },
+            { value: 'Kelas 6', label: 'Kelas 6' }
+          ];
+        }
+      } else if (unitCode === 'SMP') {
+        if (jenisPendaftaran === 'Murid Baru') {
+          options = [{ value: 'Kelas 7', label: 'Kelas 7' }];
+        } else if (jenisPendaftaran === 'Mutasi') {
+          options = [
+            { value: 'Kelas 8', label: 'Kelas 8' },
+            { value: 'Kelas 9', label: 'Kelas 9' }
+          ];
+        }
+      }
+
+      tingkatSelect.innerHTML = '<option value="">Pilih Tingkat</option>' + 
+        options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('');
+    }
+
+    document.getElementById('jenisPendaftaran').addEventListener('change', updateTingkatOptions);
 
     function showUnitSelection() {
       showOpenState();
@@ -316,17 +537,20 @@ import Layout from '../../layouts/Layout.astro';
     document.getElementById('ppdbForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mengirim...';
+      
       const formData = new FormData(e.target);
-      const data = Object.fromEntries(formData.entries());
 
       try {
         const response = await fetch(`${API_BASE}/ppdb/register`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Accept': 'application/json',
           },
-          body: JSON.stringify(data),
+          body: formData,
         });
 
         const result = await response.json();
@@ -338,10 +562,14 @@ import Layout from '../../layouts/Layout.astro';
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           alert('Gagal mengirim pendaftaran: ' + (result.message || 'Silakan coba lagi'));
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
         }
       } catch (error) {
         console.error('Error:', error);
         alert('Terjadi kesalahan. Silakan coba lagi.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
     });
 

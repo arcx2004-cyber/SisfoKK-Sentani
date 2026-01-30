@@ -12,7 +12,8 @@ class Pendaftaran extends Model
         'ppdb_setting_id', 'nomor_pendaftaran', 'nama_lengkap', 'jenis_kelamin',
         'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'asal_sekolah',
         'email', 'no_wa', 'nama_ayah', 'pekerjaan_ayah', 'nama_ibu',
-        'pekerjaan_ibu', 'no_telepon_ortu', 'status', 'catatan_admin', 'no_pendaftaran'
+        'pekerjaan_ibu', 'no_telepon_ortu', 'status', 'catatan_admin', 'no_pendaftaran',
+        'jenis_pendaftaran', 'tingkat', 'pas_foto'
     ];
 
     protected $casts = [
@@ -38,11 +39,6 @@ class Pendaftaran extends Model
         static::creating(function ($model) {
             if (empty($model->no_pendaftaran)) {
                 $model->no_pendaftaran = static::generateNomorPendaftaran();
-                // Ensure columns matching 'nomor_pendaftaran' in database vs 'no_pendaftaran' in migration are consistent.
-                // Migration 1: nomor_pendaftaran. Migration 2: no_pendaftaran.
-                // Assuming database has 'nomor_pendaftaran' from initial migration.
-                // Let's check Pendaftaran model fillable in previous turn (Step 585): 'nomor_pendaftaran'.
-                // So property should be 'nomor_pendaftaran'.
                 $model->nomor_pendaftaran = $model->no_pendaftaran; 
             }
         });

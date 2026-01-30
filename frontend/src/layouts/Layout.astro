@@ -1,14 +1,22 @@
 ---
 import '../styles/global.css';
 
+import { fetchMenus, fetchSettings } from '../lib/api';
+
 interface Props {
   title: string;
   description?: string;
 }
 
-const { title, description = 'Sekolah Kristen Kalam Kudus Sentani - Dengan Kasih & Disiplin Meningkatkan Prestasi' } = Astro.props;
+const settings = await fetchSettings();
+const { title, description = settings.school_motto || 'Sekolah Kristen Kalam Kudus Sentani - Dengan Kasih & Disiplin Meningkatkan Prestasi' } = Astro.props;
 
-const menuItems = [
+// Fetch menus from API
+const fetchedMenus = await fetchMenus();
+const menuItems = fetchedMenus.length > 0 ? fetchedMenus.map(m => ({
+  name: m.nama,
+  href: m.url
+})) : [
   { name: 'Home', href: '/' },
   { name: 'Profile', href: '/profile' },
   { name: 'Visi Misi', href: '/visi-misi' },
@@ -20,7 +28,7 @@ const menuItems = [
   { name: 'PPDB', href: '/ppdb' },
 ];
 
-const loginUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:8001/admin';
+const loginUrl = import.meta.env.PUBLIC_ADMIN_URL || 'https://skkksentani.web.id/admin';
 ---
 
 <!DOCTYPE html>
@@ -31,6 +39,8 @@ const loginUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:8001/admi
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" is:inline></script>
     <title>{title} | SisfoKK Sentani</title>
   </head>
   <body class="font-sans antialiased">
@@ -94,11 +104,11 @@ const loginUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:8001/admi
             <div class="logo">
               <img src="/logo.png" alt="Logo Kalam Kudus" class="logo-img" />
               <div class="logo-text">
-                <span class="logo-title">Sekolah Kristen Kalam Kudus</span>
-                <span class="logo-subtitle">Sentani, Papua</span>
+                <span class="logo-title">{settings.school_name || 'Sekolah Kristen Kalam Kudus'}</span>
+                <span class="logo-subtitle">{settings.school_short_name || 'Sentani, Papua'}</span>
               </div>
             </div>
-            <p class="footer-motto">"Dengan Kasih & Disiplin Meningkatkan Prestasi"</p>
+            <p class="footer-motto">"{settings.school_motto || 'Dengan Kasih & Disiplin Meningkatkan Prestasi'}"</p>
           </div>
 
           <div class="footer-links">
@@ -123,15 +133,17 @@ const loginUrl = import.meta.env.PUBLIC_ADMIN_URL || 'http://localhost:8001/admi
 
           <div class="footer-contact">
             <h4>Kontak</h4>
-            <p>Jl. Raya Sentani</p>
-            <p>Sentani, Jayapura, Papua</p>
-            <p>📞 (0967) 123456</p>
-            <p>✉️ info@sisfokk.sch.id</p>
+            <p>{settings.school_address || 'Jl. Raya Sentani'}</p>
+            <p>📞 {settings.school_phone || '(0967) 123456'}</p>
+            {settings.school_whatsapp && (
+              <p>📱 {settings.school_whatsapp}</p>
+            )}
+            <p>✉️ {settings.school_email || 'info@sisfokk.sch.id'}</p>
           </div>
         </div>
 
         <div class="footer-bottom">
-          <p>&copy; 2026 SisfoKK Sentani. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} {settings.school_short_name || 'SisfoKK Sentani'}. All rights reserved.</p>
         </div>
       </div>
     </footer>

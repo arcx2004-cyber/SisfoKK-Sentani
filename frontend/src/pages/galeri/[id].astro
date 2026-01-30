@@ -1,0 +1,59 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchGalleries, getImageUrl } from '../../lib/api';
+
+export async function getStaticPaths() {
+  const galleries = await fetchGalleries();
+  return galleries.map((item) => ({
+    params: { id: item.id.toString() },
+  }));
+}
+
+const { id } = Astro.params;
+const galleries = await fetchGalleries();
+const gallery = galleries.find(g => g.id.toString() === id);
+
+if (!gallery) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout title={gallery.judul}>
+  <section class=hero style=min-height: 300px;>
+    <div class=hero-content>
+      <span class=hero-badge>📷 Album</span>
+      <h1 class=hero-title>{gallery.judul}</h1>
+      <p class=hero-subtitle>{gallery.deskripsi}</p>
+    </div>
+  </section>
+
+  <section class=section>
+    <div class=container>
+      <div class=text-center mb-8>
+        <a href=/galeri class=btn btn-outline>← Kembali ke Galeri</a>
+      </div>
+
+      <div class=grid-masonry>
+        {gallery.photos.map((photo) => (
+          <div class=masonry-item>
+            <img 
+              src={getImageUrl(photo.gambar, '')} 
+              alt={photo.caption || gallery.judul} 
+              class=photo-item
+              loading=lazy
+            />
+            {photo.caption && <div class=photo-caption>{photo.caption}</div>}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .grid-masonry { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); grid-gap: 1.5rem; }
+    .masonry-item { break-inside: avoid; margin-bottom: 1.5rem; }
+    .photo-item { width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); transition: transform 0.3s; cursor: pointer; }
+    .photo-item:hover { transform: scale(1.02); box-shadow: var(--shadow-lg); }
+    .photo-caption { margin-top: 0.5rem; font-size: 0.9rem; color: var(--gray-600); text-align: center; }
+  </style>
+</Layout>

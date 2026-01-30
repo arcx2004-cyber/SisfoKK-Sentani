@@ -26,15 +26,45 @@ class GalleryResource extends BaseResource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('judul')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('deskripsi')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('kategori')
-                    ->maxLength(255),
-                Forms\Components\Toggle::make('is_active')
-                    ->required(),
+                Forms\Components\Section::make('Informasi Album')
+                    ->schema([
+                        Forms\Components\TextInput::make('judul')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\Textarea::make('deskripsi')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('kategori')
+                            ->placeholder('Misal: Kegiatan, Fasilitas')
+                            ->maxLength(255),
+                        Forms\Components\Toggle::make('is_active')
+                            ->required()
+                            ->default(true),
+                    ]),
+
+                Forms\Components\Section::make('Foto Album')
+                    ->schema([
+                        Forms\Components\Repeater::make('photos')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\FileUpload::make('gambar')
+                                    ->image()
+                                    ->directory('gallery-photos')
+                                    ->required()
+                                    ->columnSpanFull(),
+                                Forms\Components\TextInput::make('caption')
+                                    ->placeholder('Keterangan foto...')
+                                    ->columnSpan(2),
+                                Forms\Components\TextInput::make('urutan')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(1)
+                            ->addActionLabel('Tambah Foto')
+                            ->reorderableWithButtons(),
+                    ]),
             ]);
     }
 
@@ -46,6 +76,9 @@ class GalleryResource extends BaseResource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('kategori')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('photos_count')
+                    ->counts('photos')
+                    ->label('Jumlah Foto'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')

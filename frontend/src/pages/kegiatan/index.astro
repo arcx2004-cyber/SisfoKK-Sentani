@@ -1,0 +1,188 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchKegiatan, formatDate, getImageUrl } from '../../lib/api';
+
+const kegiatan = await fetchKegiatan();
+const displayKegiatan = kegiatan;
+
+function getDateParts(dateString: string) {
+  const date = new Date(dateString);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  return {
+    day: date.getDate().toString().padStart(2, '0'),
+    month: months[date.getMonth()]
+  };
+}
+
+function getCardColor(index: number) {
+  const colors = [
+    { border: 'var(--primary-500)', bg: 'var(--primary-100)', textDark: 'var(--primary-700)', textLight: 'var(--primary-600)' },
+    { border: 'var(--primary-500)', bg: 'var(--primary-100)', textDark: 'var(--primary-700)', textLight: 'var(--primary-600)' },
+    { border: 'var(--warning)', bg: '#fef3c7', textDark: '#b45309', textLight: '#d97706' },
+    { border: 'var(--success)', bg: '#d1fae5', textDark: '#047857', textLight: '#10b981' },
+  ];
+  return colors[index % colors.length];
+}
+---
+
+<Layout title="Kegiatan">
+  <section class="hero" style="min-height: 300px;">
+    <div class="hero-content">
+      <span class="hero-badge">📅 Agenda</span>
+      <h1 class="hero-title">Kegiatan Sekolah</h1>
+      <p class="hero-subtitle">Agenda dan kegiatan yang berlangsung di Sekolah Kalam Kudus</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Jadwal</span>
+        <h2 class="section-title">Kegiatan Mendatang</h2>
+      </div>
+
+      <div class="events-grid">
+        {displayKegiatan.map((item, index) => {
+          const dateParts = getDateParts(item.tanggal_mulai);
+          const color = getCardColor(index);
+          return (
+            <div class="card event-card" style={`border-left: 4px solid ${color.border};`}>
+               <a href={`/kegiatan/${item.slug}`} class="event-link">
+                <div class="event-date" style={`background: ${color.bg};`}>
+                  <div class="event-day" style={`color: ${color.textDark};`}>{dateParts.day}</div>
+                  <div class="event-month" style={`color: ${color.textLight};`}>{dateParts.month}</div>
+                </div>
+                <div class="event-content">
+                  <h3 class="card-title">{item.title}</h3>
+                  <p class="card-desc">{item.description || item.title}</p>
+                  {item.lokasi && (
+                    <p class="event-location">📍 {item.lokasi}</p>
+                  )}
+                </div>
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- RE-ADDED: Kalender Akademik Section -->
+  <section class="section" style="background: var(--gray-100);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Kalender</span>
+        <h2 class="section-title">Kalender Akademik</h2>
+      </div>
+
+      <div class="card" style="max-width: 800px; margin: 0 auto;">
+        <h3 class="card-title" style="text-align: center; margin-bottom: 2rem;">Semester Genap 2025/2026</h3>
+        <ul class="academic-list">
+            <li>
+                <span class="academic-date">Januari 2026</span>
+                <span class="academic-event">Pembukaan Semester Genap</span>
+            </li>
+            <li>
+                <span class="academic-date">Februari 2026</span>
+                <span class="academic-event">Ujian Tengah Semester</span>
+            </li>
+            <li>
+                <span class="academic-date">Maret 2026</span>
+                <span class="academic-event">Libur Paskah</span>
+            </li>
+            <li>
+                <span class="academic-date">April 2026</span>
+                <span class="academic-event">Ujian Akhir Semester</span>
+            </li>
+            <li>
+                <span class="academic-date">Mei 2026</span>
+                <span class="academic-event">Persiapan Kelulusan</span>
+            </li>
+            <li>
+                <span class="academic-date">Juni 2026</span>
+                <span class="academic-event">Wisuda & Penerimaan Raport</span>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  
+  <style>
+    .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    @media (max-width: 640px) {
+        .events-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .event-card {
+        padding: 0 !important;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .event-card:hover {
+        transform: translateY(-3px);
+    }
+    .event-link {
+        display: flex; 
+        gap: 1.5rem; 
+        align-items: flex-start; 
+        padding: 1.5rem; 
+        text-decoration: none; 
+        color: inherit;
+        height: 100%;
+    }
+    .event-date {
+        padding: 1rem; 
+        border-radius: var(--radius); 
+        text-align: center; 
+        min-width: 80px;
+        flex-shrink: 0;
+    }
+    .event-day {
+        font-size: 1.75rem; 
+        font-weight: 800;
+        line-height: 1;
+    }
+    .event-month {
+        font-size: 0.875rem; 
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-top: 0.25rem;
+    }
+    .event-content {
+        flex-grow: 1;
+    }
+    .event-location {
+        font-size: 0.875rem; 
+        color: var(--gray-500); 
+        margin-top: 0.5rem;
+    }
+    .academic-list {
+        list-style: none;
+        padding: 0;
+    }
+    .academic-list li {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    .academic-list li:last-child {
+        border-bottom: none;
+    }
+    .academic-date {
+        font-weight: 700;
+        color: var(--primary-700);
+    }
+    .academic-event {
+        color: var(--gray-700);
+        text-align: right;
+    }
+  </style>
+</Layout>

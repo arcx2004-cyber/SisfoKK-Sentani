@@ -30,9 +30,12 @@ class SliderResource extends BaseResource
                     ->maxLength(255),
                 Forms\Components\Textarea::make('deskripsi')
                     ->columnSpanFull(),
-                Forms\Components\TextInput::make('gambar')
-                    ->required()
-                    ->maxLength(255),
+                Forms\Components\FileUpload::make('gambar')
+                    ->image()
+                    ->directory('sliders')
+                    ->visibility('public')
+                    ->imageEditor()
+                    ->required(),
                 Forms\Components\TextInput::make('link')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('urutan')
@@ -50,8 +53,9 @@ class SliderResource extends BaseResource
             ->columns([
                 Tables\Columns\TextColumn::make('judul')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('gambar')
-                    ->searchable(),
+                Tables\Columns\ImageColumn::make('gambar')
+                    ->disk('public')
+                    ->circular(),
                 Tables\Columns\TextColumn::make('link')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('urutan')

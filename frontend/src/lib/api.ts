@@ -32,52 +32,52 @@ export interface SchoolSettings {
 
 export interface MenuItem {
     id: number;
-    title: string;
+    nama: string;
     url: string;
-    order: number;
+    urutan: number;
     children?: MenuItem[];
 }
 
 export interface Slider {
     id: number;
-    title: string;
-    subtitle?: string;
-    image: string;
-    button_text?: string;
-    button_url?: string;
+    judul: string;
+    deskripsi?: string;
+    gambar: string;
+    link?: string;
+    urutan: number;
     is_active: boolean;
 }
 
 export interface News {
     id: number;
-    title: string;
+    judul: string;
     slug: string;
-    excerpt?: string;
-    content: string;
-    image?: string;
+    ringkasan?: string;
+    konten: string;
+    featured_image?: string;
     published_at: string;
     views: number;
 }
 
 export interface Gallery {
     id: number;
-    title: string;
-    description?: string;
-    cover_image?: string;
+    judul: string;
+    deskripsi?: string;
+    
     photos: GalleryPhoto[];
 }
 
 export interface GalleryPhoto {
     id: number;
-    image: string;
+    gambar: string;
     caption?: string;
 }
 
 export interface Kegiatan {
     id: number;
-    title: string;
+    judul: string;
     slug: string;
-    description?: string;
+    deskripsi?: string;
     content: string;
     image?: string;
     tanggal_mulai: string;
@@ -168,4 +168,17 @@ export function getImageUrl(path: string | undefined | null, fallback: string): 
     // Assume storage path from Laravel
     const baseUrl = import.meta.env.PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:8080';
     return `${baseUrl}/storage/${path}`;
+}
+
+export interface Page {
+    id: number;
+    judul: string;
+    slug: string;
+    konten: string;
+    featured_image?: string;
+    published_at: string;
+}
+
+export async function fetchPage(slug: string): Promise<Page | null> {
+    return await fetchApi<Page>('/pages/' + slug);
 }

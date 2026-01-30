@@ -1,20 +1,24 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { fetchSettings } from '../lib/api';
 
-// Static contact data (no API fetch for static deploy)
+const settings = await fetchSettings();
+
 const contactData = {
-  address: 'Jl. Raya Sentani, Sentani, Jayapura, Papua 99352',
-  phone: '(0967) 123456',
-  whatsapp: '62967123456',
-  email1: 'info@sisfokk.sch.id',
-  email2: 'admin@sisfokk.sch.id',
-  map_lat: '-2.5697',
-  map_lng: '140.5047',
-  operational_hours: 'Senin - Jumat: 07:00 - 15:00 WIT, Sabtu: 07:00 - 12:00 WIT'
+  address: settings.school_address || 'Jl. Pos 7 Sentani, Jayapura, Papua',
+  phone: settings.school_phone || '081234567890',
+  whatsapp: settings.school_whatsapp || '6281234567890',
+  email1: settings.school_email || 'info@skkksentani.sch.id',
+  email2: settings.school_email2 || '',
+  map_embed: settings.google_maps_embed || '',
+  map_lat: settings.google_maps_latitude || '-2.5697',
+  map_lng: settings.google_maps_longitude || '140.5047',
+  operational_hours: settings.contact_operational_hours || 'Senin - Jumat: 07:00 - 15:00 WIT, Sabtu: 07:00 - 12:00 WIT',
+  instagram: settings.school_instagram || '',
+  facebook: settings.school_facebook || '',
+  youtube: settings.school_youtube || '',
 };
 
-// Create Google Maps embed URL
-const mapEmbedUrl = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3986.28!2d${contactData.map_lng}!3d${contactData.map_lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLocation!5e0!3m2!1sen!2sid!4v1704100000000!5m2!1sen!2sid`;
 const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},${contactData.map_lng}`;
 ---
 
@@ -29,86 +33,71 @@ const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},
 
   <section class="section">
     <div class="container">
-      <div class="grid grid-2" style="gap: 4rem;">
-        <div>
+      <div class="contact-grid">
+        <div class="contact-info">
           <h2 class="section-title" style="text-align: left; margin-bottom: 2rem;">Informasi Kontak</h2>
           
-          <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card info-card">
             <h3 class="card-title">📍 Alamat</h3>
             <p class="card-desc" set:html={contactData.address.replace(/,/g, '<br>')}></p>
           </div>
 
-          <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card info-card">
             <h3 class="card-title">📞 Telepon</h3>
             <p class="card-desc">
-              <a href={`tel:${contactData.phone}`} style="color: var(--primary-600);">{contactData.phone}</a>
+              <a href={`tel:${contactData.phone}`} style="color: var(--primary-600); text-decoration: none;">{contactData.phone}</a>
             </p>
           </div>
 
-          <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card info-card">
             <h3 class="card-title">💬 WhatsApp</h3>
             <p class="card-desc">
-              <a href={`https://wa.me/${contactData.whatsapp}`} target="_blank" rel="noopener" style="color: var(--success);">
+              <a href={`https://wa.me/${contactData.whatsapp}`} target="_blank" rel="noopener" style="color: var(--success); text-decoration: none;">
                 +{contactData.whatsapp}
               </a>
             </p>
           </div>
 
-          <div class="card" style="margin-bottom: 1.5rem;">
+          <div class="card info-card">
             <h3 class="card-title">✉️ Email</h3>
             <p class="card-desc">
-              <a href={`mailto:${contactData.email1}`} style="color: var(--primary-600);">{contactData.email1}</a>
-              {contactData.email2 && (
-                <>
-                  <br />
-                  <a href={`mailto:${contactData.email2}`} style="color: var(--primary-600);">{contactData.email2}</a>
-                </>
-              )}
+              <a href={`mailto:${contactData.email1}`} style="color: var(--primary-600); text-decoration: none;">{contactData.email1}</a>
             </p>
-          </div>
-
-          <div class="card">
-            <h3 class="card-title">⏰ Jam Operasional</h3>
-            <p class="card-desc" set:html={contactData.operational_hours.replace(/,/g, '<br>')}></p>
           </div>
         </div>
 
-        <div>
+        <div class="contact-form-container">
           <h2 class="section-title" style="text-align: left; margin-bottom: 2rem;">Kirim Pesan</h2>
           
-          <form class="card" style="padding: 2rem;">
-            <div style="margin-bottom: 1.5rem;">
-              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Nama Lengkap</label>
-              <input type="text" placeholder="Masukkan nama lengkap" 
-                     style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem;" />
+          <form class="card form-card" id="contactForm">
+            <div class="form-group">
+              <label>Nama Lengkap</label>
+              <input type="text" name="name" required placeholder="Masukkan nama lengkap" />
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Email</label>
-              <input type="email" placeholder="email@example.com" 
-                     style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem;" />
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" name="email" required placeholder="email@example.com" />
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Subjek</label>
-              <input type="text" placeholder="Tentang apa?" 
-                     style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem;" />
+            <div class="form-group">
+              <label>Subjek</label>
+              <input type="text" name="subject" required placeholder="Tentang apa?" />
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Pesan</label>
-              <textarea rows="5" placeholder="Tulis pesan Anda..." 
-                        style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem; resize: vertical;"></textarea>
+            <div class="form-group">
+              <label>Pesan</label>
+              <textarea name="content" required rows="5" placeholder="Tulis pesan Anda..."></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%;">Kirim Pesan</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">Kirim Pesan</button>
           </form>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Google Maps Section -->
+  <!-- RE-ADDED: Google Maps Section -->
   <section class="section" style="padding-top: 0;">
     <div class="container">
       <div class="section-header">
@@ -119,25 +108,125 @@ const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},
         </p>
       </div>
       <div class="map-container" style="margin-top: 2rem;">
-        <iframe 
-          src={mapEmbedUrl}
-          width="100%" 
-          height="450" 
-          style="border:0; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" 
-          allowfullscreen="" 
-          loading="lazy" 
-          referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
+        {contactData.map_embed ? (
+          <div set:html={contactData.map_embed} class="google-map-embed" />
+        ) : (
+          <iframe 
+            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3986.28!2d140.5047!3d-2.5697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLocation!5e0!3m2!1sen!2sid!4v1704100000000!5m2!1sen!2sid`}
+            width="100%" 
+            height="450" 
+            style="border:0; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" 
+            allowfullscreen="" 
+            loading="lazy" 
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        )}
       </div>
       <div style="text-align: center; margin-top: 1.5rem;">
         <a href={mapSearchUrl}
            target="_blank" 
            rel="noopener noreferrer"
            class="btn btn-outline"
-           style="display: inline-flex; align-items: center; gap: 0.5rem;">
+           style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-600); color: white; border: none;">
           <span>📍</span> Buka di Google Maps
         </a>
       </div>
     </div>
   </section>
+
+  <script define:vars={{ API_URL: import.meta.env.PUBLIC_API_URL }}>
+    const API_BASE = API_URL || 'http://skkksentani.web.id:8080/api/v1';
+    const form = document.getElementById('contactForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Mengirim...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch(`${API_BASE}/contact`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(result.message || 'Pesan terkirim!');
+                    form.reset();
+                } else {
+                    alert('Gagal: ' + (result.message || 'Error'));
+                }
+            } catch (error) {
+                alert('Gagal mengirim pesan.');
+            } finally {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+  </script>
+
+  <style>
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 4rem;
+        align-items: start;
+    }
+    @media (max-width: 900px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+    }
+    
+    .info-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-card {
+        padding: 2.5rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block; 
+        font-weight: 600; 
+        margin-bottom: 0.5rem; 
+        color: var(--gray-700);
+    }
+    
+    .form-group input, 
+    .form-group textarea {
+        width: 100%; 
+        padding: 0.75rem 1rem; 
+        border: 1px solid var(--gray-300); 
+        border-radius: var(--radius); 
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus, 
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--primary-500);
+        box-shadow: 0 0 0 3px var(--primary-100);
+    }
+    .google-map-embed :global(iframe) {
+      width: 100% !important;
+      height: 450px !important;
+      border: 0 !important;
+      border-radius: var(--radius-lg) !important;
+      box-shadow: var(--shadow-lg) !important;
+    }
+  </style>
 </Layout>
