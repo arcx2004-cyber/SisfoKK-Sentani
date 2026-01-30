@@ -44,6 +44,7 @@ class SiswaResource extends Resource
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\TextInput::make("nis")
+                                    ->label("NIPD / NIS")
                                     ->required()
                                     ->unique(ignoreRecord: true)
                                     ->maxLength(255),
@@ -58,6 +59,7 @@ class SiswaResource extends Resource
                         Forms\Components\Grid::make(3)
                             ->schema([
                                 Forms\Components\Select::make("jenis_kelamin")
+                                    ->label("JK")
                                     ->options([
                                         "L" => "Laki-laki",
                                         "P" => "Perempuan",
@@ -80,11 +82,28 @@ class SiswaResource extends Resource
                                         "Konghucu" => "Konghucu",
                                     ]),
                                 Forms\Components\TextInput::make("no_telepon")
+                                    ->label("HP")
                                     ->tel()
                                     ->maxLength(255),
                             ]),
                         Forms\Components\Textarea::make("alamat")
                             ->columnSpanFull(),
+                        Forms\Components\Grid::make(3)
+                            ->schema([
+                                Forms\Components\TextInput::make("rt")->label("RT")->maxLength(10),
+                                Forms\Components\TextInput::make("rw")->label("RW")->maxLength(10),
+                                Forms\Components\TextInput::make("kode_pos")->label("Kode Pos")->maxLength(10),
+                            ]),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make("kelurahan")->maxLength(255),
+                                Forms\Components\TextInput::make("kecamatan")->maxLength(255),
+                            ]),
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make("jenis_tinggal")->maxLength(255),
+                                Forms\Components\TextInput::make("alat_transportasi")->maxLength(255),
+                            ]),
                     ]),
                 
                 Forms\Components\Section::make("Data Orang Tua")
@@ -96,12 +115,13 @@ class SiswaResource extends Resource
                                 Forms\Components\TextInput::make("nama_ibu")->maxLength(255),
                                 Forms\Components\TextInput::make("pekerjaan_ibu")->maxLength(255),
                                 Forms\Components\TextInput::make("no_telepon_ortu")->tel()->maxLength(255),
-                                Forms\Components\TextInput::make("email_ortu")->email()->maxLength(255),
+                                Forms\Components\TextInput::make("email_ortu")->label("E-Mail Ortu")->email()->maxLength(255),
                             ]),
                     ]),
 
-                Forms\Components\Section::make("Status Sekolah")
+                Forms\Components\Section::make("Status & Sekolah Asal")
                     ->schema([
+                        Forms\Components\TextInput::make("sekolah_asal")->maxLength(255),
                         Forms\Components\DatePicker::make("tanggal_masuk"),
                         Forms\Components\Select::make("status")
                             ->options([
@@ -115,7 +135,7 @@ class SiswaResource extends Resource
                         Forms\Components\FileUpload::make("foto")
                             ->image()
                             ->directory("fotos"),
-                    ])->columns(3),
+                    ])->columns(2),
             ]);
     }
 
@@ -128,13 +148,13 @@ class SiswaResource extends Resource
                     ->icon("heroicon-o-arrow-down-tray")
                     ->color("gray")
                     ->action(function () {
-                        $headers = ["nama_lengkap", "nis", "nisn", "nik", "jenis_kelamin", "tempat_lahir", "tanggal_lahir", "agama", "alamat", "no_telepon", "nama_ayah", "nama_ibu", "unit_nama"];
-                        $callback = function() use ($headers) {
+                        $headers = ["Nama", "NIPD", "JK", "NISN", "Tempat Lahir", "Tanggal Lahir", "NIK", "Agama", "Alamat", "RT", "RW", "Kelurahan", "Kecamatan", "Kode Pos", "Jenis Tinggal", "Alat Transportasi", "HP", "E-Mail", "Nama Ayah", "Pekerjaan Ayah", "Nama Ibu", "Pekerjaan Ibu", "Rombel Saat Ini", "Sekolah Asal"];
+                        $callback = function() {
                             $file = fopen("php://output", "w");
-                            fputcsv($file, $headers);
+                            fputcsv($file, ["Nama", "NIPD", "JK", "NISN", "Tempat Lahir", "Tanggal Lahir", "NIK", "Agama", "Alamat", "RT", "RW", "Kelurahan", "Kecamatan", "Kode Pos", "Jenis Tinggal", "Alat Transportasi", "HP", "E-Mail", "Nama Ayah", "Pekerjaan Ayah", "Nama Ibu", "Pekerjaan Ibu", "Rombel Saat Ini", "Sekolah Asal"]);
                             fclose($file);
                         };
-                        return response()->streamDownload($callback, "template_siswa.csv", ["Content-Type" => "text/csv"]);
+                        return response()->streamDownload($callback, "template_siswa_skkk.csv", ["Content-Type" => "text/csv"]);
                     }),
                  Tables\Actions\Action::make("import_siswa")
                     ->label("Import Siswa")
@@ -150,37 +170,58 @@ class SiswaResource extends Resource
                     ->action(function (array $data) {
                         $file = $data["file"];
                         $handle = fopen($file->getRealPath(), "r");
-                        $header = fgetcsv($handle, 1000, ",");
+                        // Clear BOM if exists
+                        $bom = fread($handle, 3);
+                        if ($bom != "\xEF\xBB\xBF") {
+                            rewind($handle);
+                        }
+                        
+                        $header = fgetcsv($handle, 2000, ",");
                         
                         $count = 0;
                         $errors = [];
                         
-                        while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                        while (($row = fgetcsv($handle, 2000, ",")) !== FALSE) {
+                            if (empty($row[0])) continue; // Skip empty rows
                             $dataRec = array_combine($header, $row);
                             
                             try {
-                                $unit = \App\Models\Unit::where("nama", "like", "%" . $dataRec["unit_nama"] . "%")->first();
-                                
-                                if (!$unit) {
-                                    $errors[] = "Baris " . ($count + 2) . ": Unit '" . $dataRec["unit_nama"] . "' tidak ditemukan.";
-                                    continue;
+                                // Logic to determine Unit from "Rombel Saat Ini"
+                                $rombelInfo = $dataRec["Rombel Saat Ini"] ?? "";
+                                $unit_id = 1; // Default to TK
+
+                                if (preg_match("/Kelas [1-6]/i", $rombelInfo)) {
+                                    $unit_id = 2; // SD
+                                } elseif (preg_match("/Kelas [7-9]/i", $rombelInfo)) {
+                                    $unit_id = 3; // SMP
                                 }
 
                                 \App\Models\Siswa::updateOrCreate(
-                                    ["nis" => $dataRec["nis"]],
+                                    ["nis" => $dataRec["NIPD"]],
                                     [
-                                        "unit_id" => $unit->id,
-                                        "nama_lengkap" => $dataRec["nama_lengkap"],
-                                        "nisn" => $dataRec["nisn"] ?? null,
-                                        "nik" => $dataRec["nik"] ?? null,
-                                        "jenis_kelamin" => $dataRec["jenis_kelamin"] ?? "L",
-                                        "tempat_lahir" => $dataRec["tempat_lahir"] ?? null,
-                                        "tanggal_lahir" => $dataRec["tanggal_lahir"] ?: null,
-                                        "agama" => $dataRec["agama"] ?: "Kristen",
-                                        "alamat" => $dataRec["alamat"] ?? null,
-                                        "no_telepon" => $dataRec["no_telepon"] ?? null,
-                                        "nama_ayah" => $dataRec["nama_ayah"] ?? null,
-                                        "nama_ibu" => $dataRec["nama_ibu"] ?? null,
+                                        "unit_id" => $unit_id,
+                                        "nama_lengkap" => $dataRec["Nama"],
+                                        "nisn" => $dataRec["NISN"] ?? null,
+                                        "nik" => $dataRec["NIK"] ?? null,
+                                        "jenis_kelamin" => substr(strtoupper($dataRec["JK"] ?? "L"), 0, 1),
+                                        "tempat_lahir" => $dataRec["Tempat Lahir"] ?? null,
+                                        "tanggal_lahir" => $dataRec["Tanggal Lahir"] ?: null,
+                                        "agama" => $dataRec["Agama"] ?: "Kristen",
+                                        "alamat" => $dataRec["Alamat"] ?? null,
+                                        "rt" => $dataRec["RT"] ?? null,
+                                        "rw" => $dataRec["RW"] ?? null,
+                                        "kelurahan" => $dataRec["Kelurahan"] ?? null,
+                                        "kecamatan" => $dataRec["Kecamatan"] ?? null,
+                                        "kode_pos" => $dataRec["Kode Pos"] ?? null,
+                                        "jenis_tinggal" => $dataRec["Jenis Tinggal"] ?? null,
+                                        "alat_transportasi" => $dataRec["Alat Transportasi"] ?? null,
+                                        "no_telepon" => $dataRec["HP"] ?? null,
+                                        "email_ortu" => $dataRec["E-Mail"] ?? null,
+                                        "nama_ayah" => $dataRec["Nama Ayah"] ?? null,
+                                        "pekerjaan_ayah" => $dataRec["Pekerjaan Ayah"] ?? null,
+                                        "nama_ibu" => $dataRec["Nama Ibu"] ?? null,
+                                        "pekerjaan_ibu" => $dataRec["Pekerjaan Ibu"] ?? null,
+                                        "sekolah_asal" => $dataRec["Sekolah Asal"] ?? null,
                                         "status" => "aktif",
                                     ]
                                 );
@@ -216,24 +257,23 @@ class SiswaResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make("user.name")
                     ->numeric()
+                    ->placeholder("Belum ada akun")
                     ->sortable(),
                 Tables\Columns\TextColumn::make("unit.nama")
                     ->label("Unit")
-                    ->sortable()
-                    ->hidden(fn () => auth()->user()->hasAnyRole(["kepala_sekolah", "kepsek"])),
+                    ->sortable(),
                 Tables\Columns\TextColumn::make("nis")
+                    ->label("NIPD")
                     ->searchable(),
                 Tables\Columns\TextColumn::make("nama_lengkap")
                     ->searchable(),
-                Tables\Columns\TextColumn::make("jenis_kelamin"),
+                Tables\Columns\TextColumn::make("jenis_kelamin")
+                    ->label("JK"),
                 Tables\Columns\TextColumn::make("no_telepon")
+                    ->label("HP")
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make("status"),
-                Tables\Columns\TextColumn::make("created_at")
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make("agama"),

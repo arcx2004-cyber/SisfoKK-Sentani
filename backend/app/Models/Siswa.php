@@ -11,15 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Siswa extends Model
 {
     protected $fillable = [
-        'user_id', 'unit_id', 'nis', 'nisn', 'nik', 'nama_lengkap', 'jenis_kelamin',
-        'tempat_lahir', 'tanggal_lahir', 'agama', 'alamat', 'no_telepon',
-        'nama_ayah', 'pekerjaan_ayah', 'nama_ibu', 'pekerjaan_ibu',
-        'no_telepon_ortu', 'email_ortu', 'foto', 'tanggal_masuk', 'status'
+        "user_id", "unit_id", "nis", "nisn", "nik", "nama_lengkap", "jenis_kelamin",
+        "tempat_lahir", "tanggal_lahir", "agama", "alamat", "rt", "rw", "kelurahan",
+        "kecamatan", "kode_pos", "jenis_tinggal", "alat_transportasi", "no_telepon",
+        "nama_ayah", "pekerjaan_ayah", "nama_ibu", "pekerjaan_ibu",
+        "no_telepon_ortu", "email_ortu", "foto", "sekolah_asal", "tanggal_masuk", "status"
     ];
 
     protected $casts = [
-        'tanggal_lahir' => 'date',
-        'tanggal_masuk' => 'date',
+        "tanggal_lahir" => "date",
+        "tanggal_masuk" => "date",
     ];
 
     public function user(): BelongsTo
@@ -39,7 +40,7 @@ class Siswa extends Model
 
     public function rombels(): BelongsToMany
     {
-        return $this->belongsToMany(Rombel::class, 'anggota_rombels');
+        return $this->belongsToMany(Rombel::class, "anggota_rombels");
     }
 
     public function nilaiSiswas(): HasMany
@@ -123,7 +124,7 @@ class Siswa extends Model
         if (!$activeSemester) return null;
 
         return $this->rombels()
-            ->where('tahun_ajaran_id', $activeSemester->tahun_ajaran_id)
+            ->where("tahun_ajaran_id", $activeSemester->tahun_ajaran_id)
             ->first();
     }
 }
