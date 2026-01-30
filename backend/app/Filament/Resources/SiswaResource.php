@@ -4,6 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\SiswaResource\Pages;
 use App\Models\Siswa;
+use App\Models\Rombel;
+use App\Models\AnggotaRombel;
+use App\Models\TahunAjaran;
+use App\Models\RuangKelas;
+use App\Models\Unit;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -181,22 +186,36 @@ class SiswaResource extends Resource
                         $count = 0;
                         $errors = [];
                         
+                        // Get Active Academic Year
+                        $tahunAjaran = TahunAjaran::where("is_active", true)->first();
+                        if (!$tahunAjaran) {
+                            \Filament\Notifications\Notification::make()
+                                ->title("Gagal Import")
+                                ->body("Tahun Ajaran aktif tidak ditemukan.")
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
                         while (($row = fgetcsv($handle, 2000, ",")) !== FALSE) {
                             if (empty($row[0])) continue; // Skip empty rows
                             $dataRec = array_combine($header, $row);
                             
                             try {
-                                // Logic to determine Unit from "Rombel Saat Ini"
-                                $rombelInfo = $dataRec["Rombel Saat Ini"] ?? "";
+                                // Logic to determine Unit and Tingkat from "Rombel Saat Ini"
+                                $rombelNama = $dataRec["Rombel Saat Ini"] ?? "";
                                 $unit_id = 1; // Default to TK
+                                $tingkat = 0;
 
-                                if (preg_match("/Kelas [1-6]/i", $rombelInfo)) {
+                                if (preg_match("/Kelas ([1-6])/i", $rombelNama, $matches)) {
                                     $unit_id = 2; // SD
-                                } elseif (preg_match("/Kelas [7-9]/i", $rombelInfo)) {
+                                    $tingkat = (int)$matches[1];
+                                } elseif (preg_match("/Kelas ([7-9])/i", $rombelNama, $matches)) {
                                     $unit_id = 3; // SMP
+                                    $tingkat = (int)$matches[1];
                                 }
 
-                                \App\Models\Siswa::updateOrCreate(
+                                $siswa = Siswa::updateOrCreate(
                                     ["nis" => $dataRec["NIPD"]],
                                     [
                                         "unit_id" => $unit_id,
@@ -225,6 +244,39 @@ class SiswaResource extends Resource
                                         "status" => "aktif",
                                     ]
                                 );
+
+                                // Handle Rombel Assignment
+                                if (!empty($rombelNama)) {
+                                    // Find a default ruang_kelas for this unit
+                                    $ruangKelas = RuangKelas::where("unit_id", $unit_id)->first();
+                                    $ruang_kelas_id = $ruangKelas ? $ruangKelas->id : 1;
+
+                                    // Find or Create Rombel
+                                    $rombel = Rombel::firstOrCreate(
+                                        [
+                                            "nama" => $rombelNama,
+                                            "tahun_ajaran_id" => $tahunAjaran->id,
+                                            "unit_id" => $unit_id,
+                                        ],
+                                        [
+                                            "tingkat" => $tingkat,
+                                            "ruang_kelas_id" => $ruang_kelas_id,
+                                        ]
+                                    );
+
+                                    // Check if student is already in this rombel
+                                    $isAlreadyIn = AnggotaRombel::where("siswa_id", $siswa->id)
+                                        ->where("rombel_id", $rombel->id)
+                                        ->exists();
+                                    
+                                    if (!$isAlreadyIn) {
+                                        AnggotaRombel::create([
+                                            "siswa_id" => $siswa->id,
+                                            "rombel_id" => $rombel->id,
+                                        ]);
+                                    }
+                                }
+
                                 $count++;
                             } catch (\Exception $e) {
                                 $errors[] = "Baris " . ($count + 2) . ": " . $e->getMessage();
@@ -262,6 +314,9 @@ class SiswaResource extends Resource
                 Tables\Columns\TextColumn::make("unit.nama")
                     ->label("Unit")
                     ->sortable(),
+                Tables\Columns\TextColumn::make("current_rombel_nama")
+                    ->label("Rombel")
+                    ->getStateUsing(fn (Siswa $record) => $record->getCurrentRombel()?->nama ?? "-"),
                 Tables\Columns\TextColumn::make("nis")
                     ->label("NIPD")
                     ->searchable(),
@@ -279,6 +334,9 @@ class SiswaResource extends Resource
                 Tables\Filters\SelectFilter::make("agama"),
                 Tables\Filters\SelectFilter::make("unit_id")
                     ->relationship("unit", "nama"),
+                Tables\Filters\SelectFilter::make("rombel_id")
+                    ->label("Rombel")
+                    ->relationship("rombels", "nama", fn (Builder $query) => $query->where("tahun_ajaran_id", TahunAjaran::where("is_active", true)->first()?->id)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

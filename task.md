@@ -1,6 +1,6 @@
 # Roadmap Pengembangan & Maintenance Website SKKK Sentani
 
-## 1. Infrastruktur & Deployment 🚀
+## 1. Infrastruktur & Deployment ðŸš€
 - [x] Setup VPS Alpine Linux (Docker & Git installed)
 - [x] Konfigurasi SSH & Security (Key-based login)
 - [x] Setup Containerization (Docker Compose: Nginx, PHP, MySQL, Redis, Node)
@@ -10,7 +10,7 @@
 - [x] Implementasi CI/CD Auto Deployment (GitHub Actions)
 - [x] Setup Backup Otomatis Database & Storage (Cron Job Active)
 
-## 2. Backend Development (Laravel + Filament) 🛠️
+## 2. Backend Development (Laravel + Filament) ðŸ› ï¸
 - [x] Setup Core Framework & Database Connection
 - [x] Implementasi Role & Permission (Fix Admin Access)
 - [x] Modul Manajemen Berita/Artikel (Rich Editor Updated)
@@ -23,8 +23,9 @@
 - [x] API Endpoint untuk Frontend Public
 - [ ] Optimasi Query & Caching (Redis)
 
-## 3. Frontend Development (Vite Client) 🎨
+## 3. Frontend Development (Vite Client) ðŸŽ¨
 - [x] Setup Vite & Basic Routing
+- [x] Konfigurasi Host & Environment Variables
 - [x] Halaman Beranda (Home - *Dynamic Sliders & News*)
 - [x] Halaman Profil & Sejarah (*Dynamic Content - Layout Fixed*)
 - [x] Halaman Berita & Kegiatan (*List, Detail View & Calendar Refined*)
@@ -33,25 +34,27 @@
 - [x] Halaman Pendaftaran PPDB Online (Form & Photo Upload)
 - [x] Responsive Design (Mobile Friendly)
 
-## 4. Konten & Data 📝
+## 4. Konten & Data ðŸ“
 - [ ] Migrasi Data Lama (jika ada)
 - [x] Input Data Awal (Seeding: User Admin, Profil Sekolah)
 - [x] Testing & Quality Assurance (QA - Phase 1 Complete)
 
-## 5. Maintenance & Monitoring 🛡️
+## 5. Maintenance & Monitoring ðŸ›¡ï¸
 - [ ] Monitoring Server Resource (CPU/RAM)
 - [ ] Log Monitoring (Error logs)
 - [ ] Update Security Patch Berkala
 
-## 6. Selesaikan Isu Spesifik 🐞
+## 6. Selesaikan Isu Spesifik ðŸž
 - [x] Investigasi Modul RAPBS yang Hilang
     - [x] Cek Database & File System
     - [x] Identifikasi Masalah Visibility (Fix logic di `RapbsResource.php`)
     - [x] Deploy Perbaikan & Verifikasi
 - [x] Modul Impor Data Siswa
     - [x] Perencanaan (CSV Parser approach)
-    - [x] Pembuatan Template Excel/CSV (Built-in to Action)
-    - [x] Implementasi Backend Action (`SiswaResource.php`)
+    - [x] Pembuatan Template Excel/CSV (Customized to User Format)
+    - [x] Implementasi Backend Action
+        - [x] Data Mapping (User Format)
+        - [x] Auto-assignment to Rombel & Unit
     - [x] Testing & Verifikasi
 
-*Last Updated: 2026-01-30 12:40*
+*Last Updated: 2026-01-30 13:00*

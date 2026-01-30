@@ -30,8 +30,7 @@ Sistem deployment kini sudah sepenuhnya otomatis:
 Fitur impor data siswa telah disesuaikan sepenuhnya dengan format Excel asli sekolah:
 
 - **Penambahan Kolom Database**: Menambahkan field RT, RW, Kelurahan, Kecamatan, Kode Pos, Jenis Tinggal, Alat Transportasi, dan Sekolah Asal agar data tersimpan lengkap.
-- **Mapping Otomatis**: Sistem mengenali header tabel asli seperti "NIPD" (sebagai NIS), "JK", dan "HP".
-- **Deteksi Unit Otomatis**: Sistem secara cerdas mendeteksi apakah siswa masuk ke unit TK, SD, atau SMP berdasarkan isi kolom "Rombel Saat Ini".
+- **Mapping & Rombel Otomatis**: Sistem mengenali header tabel asli (seperti "NIPD" dan "JK") dan langsung menempatkan siswa ke kelas (Rombel) yang sesuai di Tahun Ajaran 2025/2026. Jika nama kelas belum ada, sistem akan membuatnya secara otomatis.
 - **Template Khusus**: Tombol "Download Template CSV" kini menghasilkan file dengan susunan kolom yang sama persis dengan tabel Excel sekolah Anda.
 - **Batch Processing**: Memungkinkan pendaftaran ratusan siswa dalam hitungan detik.
 
