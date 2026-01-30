@@ -7,7 +7,7 @@
 - [x] Konfigurasi Domain skkksentani.web.id
 - [x] Setup SSL/HTTPS (via Nginx/Certbot)
 - [x] Script Deployment Otomatis (deploy.sh)
-- [x] Implementasi CI/CD Auto Deployment (GitHub Actions - **Requires Secrets Setup**)
+- [x] Implementasi CI/CD Auto Deployment (GitHub Actions)
 - [x] Setup Backup Otomatis Database & Storage (Cron Job Active)
 
 ## 2. Backend Development (Laravel + Filament) 🛠️
@@ -28,20 +28,20 @@
 - [x] Konfigurasi Host & Environment Variables
 - [x] Halaman Beranda (Home - *Dynamic Sliders & News*)
 - [x] Halaman Profil & Sejarah (*Dynamic Content - Layout Fixed*)
-- [x] Halaman Berita & Kegiatan (*List & Detail View - Restoration Fixed*)
+- [x] Halaman Berita & Kegiatan (*List, Detail View & Calendar Refined*)
 - [x] Halaman Galeri Foto/Video (*Dynamic Album & Grid*)
-- [x] Halaman Kontak & Lokasi (*Form Submission & Map Restoration Fixed*)
+- [x] Halaman Kontak & Lokasi (*Form Submission & Map Restoration*)
 - [x] Halaman Pendaftaran PPDB Online (Form & Photo Upload)
 - [x] Responsive Design (Mobile Friendly)
 
 ## 4. Konten & Data 📝
 - [ ] Migrasi Data Lama (jika ada)
 - [x] Input Data Awal (Seeding: User Admin, Profil Sekolah)
-- [/] Testing & Quality Assurance (QA - *On Progress*)
+- [x] Testing & Quality Assurance (QA - Phase 1 Complete)
 
 ## 5. Maintenance & Monitoring 🛡️
 - [ ] Monitoring Server Resource (CPU/RAM)
 - [ ] Log Monitoring (Error logs)
 - [ ] Update Security Patch Berkala
 
-*Last Updated: 2026-01-30 10:15*
+*Last Updated: 2026-01-30 10:20*

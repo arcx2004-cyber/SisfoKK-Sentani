@@ -67,42 +67,32 @@ function getCardColor(index: number) {
     </div>
   </section>
 
-  <!-- RE-ADDED: Kalender Akademik Section -->
-  <section class="section" style="background: var(--gray-100);">
+  <!-- RE-DESIGNED: Kalender Akademik Section -->
+  <section class="section academic-section">
     <div class="container">
       <div class="section-header">
         <span class="section-badge">Kalender</span>
         <h2 class="section-title">Kalender Akademik</h2>
+        <p class="section-desc">Jadwal penting operasional sekolah selama satu semester</p>
       </div>
 
-      <div class="card" style="max-width: 800px; margin: 0 auto;">
-        <h3 class="card-title" style="text-align: center; margin-bottom: 2rem;">Semester Genap 2025/2026</h3>
-        <ul class="academic-list">
-            <li>
-                <span class="academic-date">Januari 2026</span>
-                <span class="academic-event">Pembukaan Semester Genap</span>
-            </li>
-            <li>
-                <span class="academic-date">Februari 2026</span>
-                <span class="academic-event">Ujian Tengah Semester</span>
-            </li>
-            <li>
-                <span class="academic-date">Maret 2026</span>
-                <span class="academic-event">Libur Paskah</span>
-            </li>
-            <li>
-                <span class="academic-date">April 2026</span>
-                <span class="academic-event">Ujian Akhir Semester</span>
-            </li>
-            <li>
-                <span class="academic-date">Mei 2026</span>
-                <span class="academic-event">Persiapan Kelulusan</span>
-            </li>
-            <li>
-                <span class="academic-date">Juni 2026</span>
-                <span class="academic-event">Wisuda & Penerimaan Raport</span>
-            </li>
-        </ul>
+      <div class="calendar-cards">
+        {[
+          { date: "Januari 2026", event: "Pembukaan Semester Genap", icon: "📖", color: "blue" },
+          { date: "Februari 2026", event: "Ujian Tengah Semester", icon: "📝", color: "orange" },
+          { date: "Maret 2026", event: "Libur Paskah & Wafat Isa Almasih", icon: "✨", color: "purple" },
+          { date: "April 2026", event: "Ujian Akhir Semester", icon: "✍️", color: "red" },
+          { date: "Mei 2026", event: "Persiapan Kelulusan & Kenaikan", icon: "🎓", color: "green" },
+          { date: "Juni 2026", event: "Wisuda & Penerimaan Raport", icon: "gold" }
+        ].map((item) => (
+          <div class={`calendar-card ${item.color || 'blue'}`}>
+            <div class="calendar-icon">{item.icon || '📅'}</div>
+            <div class="calendar-info">
+              <h4 class="calendar-date">{item.date}</h4>
+              <p class="calendar-event">{item.event}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   </section>
@@ -163,26 +153,74 @@ function getCardColor(index: number) {
         color: var(--gray-500); 
         margin-top: 0.5rem;
     }
-    .academic-list {
-        list-style: none;
-        padding: 0;
+
+    .academic-section {
+        background: var(--gray-50);
     }
-    .academic-list li {
+
+    .calendar-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .calendar-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: var(--radius-lg);
         display: flex;
-        justify-content: space-between;
-        padding: 1rem 0;
-        border-bottom: 1px solid var(--gray-200);
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--shadow-sm);
+        border-bottom: 4px solid transparent;
+        transition: all 0.3s;
     }
-    .academic-list li:last-child {
-        border-bottom: none;
+
+    .calendar-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
     }
-    .academic-date {
+
+    .calendar-icon {
+        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--gray-100);
+        border-radius: var(--radius);
+        flex-shrink: 0;
+    }
+
+    .calendar-date {
         font-weight: 700;
-        color: var(--primary-700);
+        color: var(--gray-900);
+        margin-bottom: 0.25rem;
+        font-size: 1.1rem;
     }
-    .academic-event {
-        color: var(--gray-700);
-        text-align: right;
+
+    .calendar-event {
+        color: var(--gray-600);
+        font-size: 0.95rem;
+        line-height: 1.4;
     }
+
+    /* Colors */
+    .blue { border-bottom-color: #3b82f6; }
+    .orange { border-bottom-color: #f97316; }
+    .purple { border-bottom-color: #a855f7; }
+    .red { border-bottom-color: #ef4444; }
+    .green { border-bottom-color: #22c55e; }
+    .gold { border-bottom-color: #eab308; }
+
+    .blue .calendar-icon { background: #eff6ff; }
+    .orange .calendar-icon { background: #fff7ed; }
+    .purple .calendar-icon { background: #faf5ff; }
+    .red .calendar-icon { background: #fef2f2; }
+    .green .calendar-icon { background: #f0fdf4; }
+    .gold .calendar-icon { background: #fefce8; }
   </style>
 </Layout>
