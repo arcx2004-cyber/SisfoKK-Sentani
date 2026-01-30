@@ -25,7 +25,6 @@
 
 ## 3. Frontend Development (Vite Client) 🎨
 - [x] Setup Vite & Basic Routing
-- [x] Konfigurasi Host & Environment Variables
 - [x] Halaman Beranda (Home - *Dynamic Sliders & News*)
 - [x] Halaman Profil & Sejarah (*Dynamic Content - Layout Fixed*)
 - [x] Halaman Berita & Kegiatan (*List, Detail View & Calendar Refined*)
@@ -49,10 +48,10 @@
     - [x] Cek Database & File System
     - [x] Identifikasi Masalah Visibility (Fix logic di `RapbsResource.php`)
     - [x] Deploy Perbaikan & Verifikasi
-- [/] Modul Impor Data Siswa
+- [x] Modul Impor Data Siswa
     - [x] Perencanaan (CSV Parser approach)
-    - [ ] Pembuatan Template Excel/CSV
-    - [ ] Implementasi Backend Action
-    - [ ] Testing & Verifikasi
+    - [x] Pembuatan Template Excel/CSV (Built-in to Action)
+    - [x] Implementasi Backend Action (`SiswaResource.php`)
+    - [x] Testing & Verifikasi
 
-*Last Updated: 2026-01-30 12:30*
+*Last Updated: 2026-01-30 12:40*
