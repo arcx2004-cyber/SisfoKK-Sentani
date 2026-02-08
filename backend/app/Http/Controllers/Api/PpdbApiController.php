@@ -75,7 +75,7 @@ class PpdbApiController extends Controller
         // Prepare data
         $data = $request->except(['akta_kelahiran', 'kartu_keluarga', 'ijazah_skhu', 'unit_code', 'pas_foto']);
         $data['nomor_pendaftaran'] = $nomorPendaftaran;
-        $data['status'] = 'baru';
+        $data['status'] = 'pending';
 
         // Save Pas Foto
         if ($request->hasFile('pas_foto')) {
