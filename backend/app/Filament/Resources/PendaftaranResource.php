@@ -30,7 +30,8 @@ class PendaftaranResource extends BaseResource
                     Forms\Components\Wizard\Step::make('Data Peserta Didik')
                         ->schema([
                             Forms\Components\Select::make('ppdb_setting_id')
-                                ->relationship('ppdbSetting', 'judul')
+                                ->relationship('ppdbSetting')
+                                ->getOptionLabelFromRecordUsing(fn ($record) => $record->tahunAjaran->nama . ' - ' . $record->unit->nama)
                                 ->label('Gelombang PPDB')
                                 ->required(),
                             Forms\Components\TextInput::make('nomor_pendaftaran')
@@ -215,6 +216,12 @@ class PendaftaranResource extends BaseResource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'baru')->count() ?: null;
     }
 
     public static function getRelations(): array

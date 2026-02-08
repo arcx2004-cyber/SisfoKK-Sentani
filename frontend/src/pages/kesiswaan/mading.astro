@@ -1,0 +1,53 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchMading, formatDate, getImageUrl } from '../../lib/api';
+
+const res = await fetchMading(50); 
+const madings = Array.isArray(res) ? res : [];
+---
+
+<Layout title="Mading Digital">
+  <div class="bg-gray-50 min-h-screen py-10">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-10">
+        <h1 class="text-3xl font-bold text-gray-800">Mading Digital</h1>
+        <p class="text-gray-600 mt-2">Karyaku, Prestasiku, Ceritaku.</p>
+      </div>
+
+      {madings.length === 0 ? (
+        <div class="text-center text-gray-500 py-10">
+          <p>Belum ada karya mading yang dipublikasikan.</p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {madings.map((mading) => (
+            <article class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300 flex flex-col h-full">
+              <div class="h-48 overflow-hidden bg-gray-200">
+                <img 
+                  src={getImageUrl(mading.image, '/placeholder-mading.jpg')} 
+                  alt={mading.title}
+                  class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  onerror="this.src='https://placehold.co/600x400?text=Karya+Siswa'"
+                />
+              </div>
+              <div class="p-5 flex-1 flex flex-col">
+                <div class="mb-2">
+                    <span class="inline-block px-2 py-1 text-xs font-semibold text-primary bg-primary-50 rounded-full">
+                        Karya Siswa
+                    </span>
+                </div>
+                <h2 class="text-lg font-bold text-gray-800 mb-2 line-clamp-2">{mading.title}</h2>
+                <div class="text-sm text-gray-700 mb-4 prose prose-sm line-clamp-3" set:html={mading.content}></div>
+                
+                <div class="mt-auto flex items-center justify-between text-xs text-gray-500 pt-4 border-t">
+                  <span class="font-medium text-gray-700">Oleh: {mading.author_name}</span>
+                  <span>{formatDate(mading.published_at)}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>

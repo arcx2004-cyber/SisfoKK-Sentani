@@ -21,6 +21,7 @@ class KonselingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
     protected static ?string $navigationLabel = 'Bimbingan & Konseling';
+    protected static ?string $navigationGroup = 'Kesiswaan';
     
     public static function getLabel(): ?string
     {

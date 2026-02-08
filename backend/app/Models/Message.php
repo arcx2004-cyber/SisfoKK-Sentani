@@ -9,13 +9,12 @@ class Message extends Model
 {
     use HasFactory;
 
-    protected  = [
+    protected $fillable = [
         'name',
         'email',
+        'phone',
         'subject',
         'content',
-        'phone',
-        'status', // read, unread
-        'is_archived'
+        'is_read',
     ];
 }

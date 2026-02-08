@@ -32,6 +32,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/ppdb/register', [PpdbApiController::class, 'store']);
     Route::post('/ppdb/{pendaftaranId}/dokumen', [PpdbApiController::class, 'uploadDokumen']);
     Route::get('/ppdb/status/{nomorPendaftaran}', [PpdbApiController::class, 'checkStatus']);
+
+    // New Features
+    Route::get('/documents', [PublicApiController::class, 'documents']);
+    Route::get('/mading', [PublicApiController::class, 'mading']);
+    Route::get('/prestasi', [PublicApiController::class, 'prestasi']);
+    Route::get('/sambutans', [PublicApiController::class, 'sambutans']);
     
     // Contact
     Route::post('/contact', [PublicApiController::class, 'sendMessage']);

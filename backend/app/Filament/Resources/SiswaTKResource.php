@@ -6,6 +6,7 @@ use App\Filament\Resources\SiswaResource;
 use App\Models\Siswa;
 use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\SiswaTKResource\Pages;
 
 class SiswaTKResource extends SiswaResource
 {
@@ -24,7 +25,16 @@ class SiswaTKResource extends SiswaResource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->whereHas('unit', function ($query) {
-            $query->where('nama', 'like', '%Taman Kanak-Kanak%');
+            $query->where('kode', 'TK');
         });
     }
-}
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSiswaTK::route('/'),
+            'create' => \App\Filament\Resources\SiswaResource\Pages\CreateSiswa::route('/create'),
+            'edit' => \App\Filament\Resources\SiswaResource\Pages\EditSiswa::route('/{record}/edit'),
+        ];
+    }
+    }

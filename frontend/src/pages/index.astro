@@ -11,6 +11,12 @@ const news = await fetchNews(3);
 
 const activeSlider = sliders.length > 0 ? sliders[0] : null;
 
+// Debug log to check slider data in SSR
+console.log('Sliders found:', sliders.length);
+if (sliders.length > 0) {
+  console.log('First slider title:', sliders[0].judul);
+}
+
 // Fallback data for units if API returns empty
 const displayUnits = units.length > 0 ? units : [
   { id: 1, nama: 'TK', kode: 'TK', deskripsi: 'Pendidikan Anak Usia Dini dengan pendekatan bermain sambil belajar', urutan: 1, is_active: true },
@@ -20,250 +26,262 @@ const displayUnits = units.length > 0 ? units : [
 
 // Fallback news if API returns empty
 const displayNews = news.length > 0 ? news : [
-  { id: 1, judul: 'PPDB 2026/2027 Resmi Dibuka', slug: 'ppdb-2026', ringkasan: 'Pendaftaran Peserta Didik Baru untuk tahun ajaran 2026/2027 telah resmi dibuka...', featured_image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop', published_at: '2026-01-12' },
-  { id: 2, judul: 'Siswa Raih Medali Olimpiade Sains', slug: 'olimpiade-sains', ringkasan: 'Siswa SMP Kalam Kudus berhasil meraih medali emas dalam Olimpiade Sains Nasional...', featured_image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=200&fit=crop', published_at: '2026-01-08' },
-  { id: 3, judul: 'Perayaan Natal Bersama', slug: 'natal-2025', ringkasan: 'Seluruh civitas akademika merayakan Natal bersama dengan penuh sukacita...', featured_image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=200&fit=crop', published_at: '2025-12-25' },
+  { id: 1, judul: 'PPDB 2026/2027 Resmi Dibuka', slug: 'ppdb-2026', ringkasan: 'Pendaftaran Peserta Didik Baru untuk tahun ajaran 2026/2027 telah resmi dibuka...', featured_image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80', published_at: '2026-01-12' },
+  { id: 2, judul: 'Siswa Raih Medali Olimpiade Sains', slug: 'olimpiade-sains', ringkasan: 'Siswa SMP Kalam Kudus berhasil meraih medali emas dalam Olimpiade Sains Nasional...', featured_image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&q=80', published_at: '2026-01-08' },
+  { id: 3, judul: 'Perayaan Natal Bersama', slug: 'natal-2025', ringkasan: 'Seluruh civitas akademika merayakan Natal bersama dengan penuh sukacita...', featured_image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80', published_at: '2025-12-25' },
 ];
 ---
 
 <Layout title="Home">
   <!-- Hero Slider -->
-  <section class="hero-slider swiper">
-    <div class="swiper-wrapper">
-      {sliders.length > 0 ? sliders.map((slider) => (
-        <div class="swiper-slide">
-          <div class="hero" style={`background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${getImageUrl(slider.gambar, '')}'); background-size: cover; background-position: center;`}>
-            <div class="hero-content">
-              <span class="hero-badge">🎓 Selamat Datang di</span>
-              <h1 class="hero-title">{slider.judul}</h1>
-              <p class="hero-subtitle">"{slider.deskripsi || settings.school_motto || 'Dengan Kasih & Disiplin Meningkatkan Prestasi'}"</p>
-              <div class="hero-buttons">
-                <a href={slider.link || '/ppdb'} class="btn btn-primary">Daftar PPDB 2026</a>
-                <a href="/profile" class="btn btn-outline">Tentang Kami</a>
+  <section class="relative h-[60vh] overflow-hidden">
+    <div class="hero-slider swiper h-full">
+      <div class="swiper-wrapper">
+        {sliders.length > 0 ? sliders.map((slider) => (
+          <div class="swiper-slide h-full group">
+            <div class="relative h-full flex items-center justify-center">
+              <div class="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] scale-100 group-[.swiper-slide-active]:scale-110" style={`background-image: url('${getImageUrl(slider.gambar, '')}');`}></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-primary-950/90 via-primary-900/60 to-transparent"></div>
+              
+              <div class="container relative z-10">
+                <div class="max-w-3xl transform transition-all duration-1000 translate-y-10 opacity-0 group-[.swiper-slide-active]:translate-y-0 group-[.swiper-slide-active]:opacity-100">
+                  <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/20 backdrop-blur-md border border-primary-400/30 text-primary-200 text-sm font-bold mb-6">
+                    <span class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></span>
+                    PROFIL SEKOLAH
+                  </div>
+                  <h1 class="font-heading font-extrabold text-3xl md:text-5xl text-white mb-4 leading-[1.1]">
+                    {slider.judul}
+                  </h1>
+                  <p class="text-lg text-white/80 mb-8 leading-relaxed max-w-2xl font-medium">
+                    {slider.deskripsi || settings.school_motto || 'Membentuk generasi emas yang berintegritas dan berkarakter Kristiani.'}
+                  </p>
+                  <div class="flex flex-wrap gap-4">
+                    <a href={slider.link || '/ppdb'} class="px-8 py-4 rounded-2xl bg-primary-500 text-white font-bold text-lg hover:bg-primary-600 transition-all hover:shadow-2xl hover:shadow-primary-500/30 no-underline">
+                      Daftar PPDB 2026
+                    </a>
+                    <a href="/profile" class="px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold text-lg hover:bg-white/20 transition-all no-underline">
+                      Tentang Kami
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )) : (
-        <div class="swiper-slide">
-          <div class="hero">
-            <div class="hero-content">
-              <span class="hero-badge">🎓 Selamat Datang di</span>
-              <h1 class="hero-title">{settings.school_name || 'Sekolah Kristen Kalam Kudus Sentani'}</h1>
-              <p class="hero-subtitle">"{settings.school_motto || 'Dengan Kasih & Disiplin Meningkatkan Prestasi'}"</p>
-              <div class="hero-buttons">
-                <a href="/ppdb" class="btn btn-primary">Daftar PPDB 2026</a>
-                <a href="/profile" class="btn btn-outline">Tentang Kami</a>
-              </div>
+        )) : (
+          <div class="swiper-slide h-full">
+            <div class="relative h-full flex items-center justify-center bg-primary-900">
+                <div class="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000')] bg-cover bg-center"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-primary-950/80 to-primary-900"></div>
+                <div class="container relative z-10 text-center">
+                    <h1 class="font-heading font-extrabold text-3xl md:text-5xl text-white mb-4">
+                        {settings.school_name || 'Kalam Kudus Sentani'}
+                    </h1>
+                    <p class="text-lg text-white/80 max-w-2xl mx-auto mb-8 italic">
+                        "{settings.school_motto || 'Dengan Kasih & Disiplin Meningkatkan Prestasi'}"
+                    </p>
+                    <a href="/ppdb" class="inline-block px-10 py-4 rounded-2xl bg-white text-primary-900 font-bold text-lg hover:shadow-2xl transition-all no-underline">Mulai Pendaftaran</a>
+                </div>
             </div>
           </div>
+        )}
+      </div>
+      <!-- Controls -->
+      <div class="container absolute bottom-12 left-0 right-0 z-20 hidden md:flex items-center justify-between">
+        <div class="swiper-pagination !static !w-auto flex gap-3"></div>
+        <div class="flex gap-4">
+            <button class="swiper-prev w-12 h-12 rounded-full border border-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-primary-900 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+            </button>
+            <button class="swiper-next w-12 h-12 rounded-full border border-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white hover:text-primary-900 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </button>
         </div>
-      )}
-    </div>
-    <!-- Swiper controls -->
-    <div class="swiper-pagination"></div>
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-  </section>
-
-  <!-- Stats Section -->
-  <section class="stats">
-    <div class="container">
-      <ul class="stats-grid">
-        <li class="stat">
-          <div class="stat-number">{displayUnits.length}</div>
-          <div class="stat-label">Unit Sekolah</div>
-        </li>
-        <li class="stat">
-          <div class="stat-number">50+</div>
-          <div class="stat-label">Tenaga Pendidik</div>
-        </li>
-        <li class="stat">
-          <div class="stat-number">500+</div>
-          <div class="stat-label">Siswa Aktif</div>
-        </li>
-        <li class="stat">
-          <div class="stat-number">30+</div>
-          <div class="stat-label">Tahun Berdiri</div>
-        </li>
-      </ul>
+      </div>
     </div>
   </section>
 
   <!-- Units Section -->
-  <section class="section">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-badge">Unit Pendidikan</span>
-        <h2 class="section-title">Jenjang Pendidikan Kami</h2>
-        <p class="section-desc">Menyediakan pendidikan berkualitas dari Taman Kanak-Kanak hingga Sekolah Menengah Pertama</p>
+  <section class="py-24 bg-white relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-1/3 h-full bg-primary-50/50 skew-x-12 translate-x-20"></div>
+    <div class="container relative z-10">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+        <div>
+            <span class="text-primary-500 font-bold tracking-[0.2em] uppercase text-xs mb-4 block">Our Excellence</span>
+            <h2 class="font-heading font-extrabold text-4xl md:text-5xl text-gray-900 mb-6">Jenjang <span class="text-primary-600">Pendidikan</span></h2>
+            <p class="text-gray-500 max-w-xl text-lg leading-relaxed">Kami berdedikasi untuk memberikan fondasi pendidikan yang kuat bagi setiap anak di setiap tahap pertumbuhan mereka.</p>
+        </div>
+        <div>
+            <a href="/unit" class="group flex items-center gap-3 font-bold text-gray-900 no-underline hover:text-primary-600 transition-colors">
+                Lihat Semua Unit
+                <span class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="18" height="18">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                </span>
+            </a>
+        </div>
       </div>
 
-      <div class="grid grid-3">
-        {displayUnits.map((unit) => (
-          <div class="unit-card">
-            <div class="unit-icon">{getUnitIcon(unit.kode)}</div>
-            <h3 class="unit-name">{unit.nama}</h3>
-            <p class="unit-desc">{unit.deskripsi || `Unit ${unit.nama} Sekolah Kalam Kudus Sentani`}</p>
-            
-            <ul class="card-list">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {displayUnits.map((unit, index) => (
+          <div class="group p-10 rounded-[2.5rem] transition-all duration-500 hover:-translate-y-4 bg-primary-50/60 hover:bg-white hover:shadow-2xl hover:shadow-primary-500/10 border border-transparent hover:border-primary-100">
+            <div class="w-20 h-20 rounded-3xl flex items-center justify-center mb-8 transition-transform group-hover:rotate-12 bg-white text-primary-600 shadow-sm">
               {unit.kode === 'TK' && (
-                <>
-                  <li>Pendidikan berbasis kasih</li>
-                  <li>Pengembangan motorik & kreativitas</li>
-                  <li>Pembentukan karakter sejak dini</li>
-                </>
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-baby shrink-0"><path d="M12 2a10 10 0 0 0-8 16"/><path d="m14 2 2 4"/><path d="m5 16 3-3"/><path d="M12 2a10 10 0 0 1 8 16"/><path d="m10 2-2 4"/><path d="m19 16-3-3"/><path d="M12 11v.01"/><path d="M11 15h2"/><path d="M10 20c0 1 1 2 2 2s2-1 2-2"/></svg>
               )}
               {unit.kode === 'SD' && (
-                <>
-                  <li>Kurikulum Nasional Terpadu</li>
-                  <li>Program penguatan karakter</li>
-                  <li>Ekstrakurikuler yang beragam</li>
-                </>
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open shrink-0"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
               )}
               {unit.kode === 'SMP' && (
-                <>
-                  <li>Persiapan akademik unggulan</li>
-                  <li>Pengembangan minat dan bakat</li>
-                  <li>Kepemimpinan & kemandirian</li>
-                </>
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap shrink-0"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
               )}
-            </ul>
-
-            <a href={`/unit/${unit.kode.toLowerCase()}`} class="btn btn-primary">Selengkapnya</a>
+              {!['TK', 'SD', 'SMP'].includes(unit.kode) && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-school shrink-0"><path d="M14 22v-4a2 2 0 1 0-4 0v4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M18 5v5"/><path d="m12 2 8 4H4l8-4z"/><path d="M6 5v5"/></svg>
+              )}
+            </div>
+            <h3 class="font-heading font-extrabold text-2xl mb-4 text-gray-900 tracking-tight">{unit.nama}</h3>
+            <p class="text-lg mb-8 leading-relaxed text-gray-500">
+              {unit.deskripsi || `Pendidikan berkualitas tinggi untuk jenjang ${unit.nama} dengan standar internasional.`}
+            </p>
+            
+            <a href={`/unit/${unit.kode.toLowerCase()}`} class="inline-flex items-center gap-2 font-bold no-underline group/btn text-primary-600 hover:text-primary-700">
+              SELENGKAPNYA
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="18" height="18" class="transition-transform group-hover/btn:translate-x-1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </a>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="section" style="background: var(--gray-100);">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-badge">Keunggulan</span>
-        <h2 class="section-title">Mengapa Memilih Kami?</h2>
-        <p class="section-desc">Komitmen kami untuk memberikan pendidikan terbaik berbasis iman Kristiani</p>
-      </div>
-
-      <div class="grid grid-4">
-        <div class="card">
-          <div class="card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-            </svg>
-          </div>
-          <h3 class="card-title">Kurikulum Terpadu</h3>
-          <p class="card-desc">Menggabungkan kurikulum nasional dengan nilai-nilai Kristiani</p>
-          <ul class="feature-list">
-            <li>Kurikulum Nasional</li>
-            <li>Nilai-nilai Kristiani</li>
-            <li>Pembelajaran Kontekstual</li>
-          </ul>
+  <!-- Stats Section -->
+  <section class="py-20 bg-primary-950 relative">
+    <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+    <div class="container relative z-10">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="text-center p-8 bg-white/5 backdrop-blur-lg rounded-3xl border border-white/10 transition-colors hover:bg-white/10">
+          <div class="font-heading font-black text-5xl text-primary-400 mb-2">{displayUnits.length}</div>
+          <div class="text-white/60 text-xs font-bold uppercase tracking-[3px]">Internal Unit</div>
         </div>
-
-        <div class="card">
-          <div class="card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
-            </svg>
-          </div>
-          <h3 class="card-title">Guru Berkualitas</h3>
-          <p class="card-desc">Tenaga pengajar profesional dan berdedikasi tinggi</p>
-          <ul class="feature-list">
-            <li>Sertifikasi Pendidik</li>
-            <li>Pelatihan Berkala</li>
-            <li>Panggilan Pelayanan</li>
-          </ul>
+        <div class="text-center p-8 bg-white/5 backdrop-blur-lg rounded-3xl border border-white/10 transition-colors hover:bg-white/10">
+          <div class="font-heading font-black text-5xl text-primary-400 mb-2">50+</div>
+          <div class="text-white/60 text-xs font-bold uppercase tracking-[3px]">Expert Teachers</div>
         </div>
-
-        <div class="card">
-          <div class="card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
-            </svg>
-          </div>
-          <h3 class="card-title">Pendidikan Karakter</h3>
-          <p class="card-desc">Membentuk karakter Kristiani yang kuat dan bermoral</p>
-          <ul class="feature-list">
-            <li>Integritas</li>
-            <li>Disiplin Diri</li>
-            <li>Kepedulian Sosial</li>
-          </ul>
+        <div class="text-center p-8 bg-white/5 backdrop-blur-lg rounded-3xl border border-white/10 transition-colors hover:bg-white/10">
+          <div class="font-heading font-black text-5xl text-primary-400 mb-2">500+</div>
+          <div class="text-white/60 text-xs font-bold uppercase tracking-[3px]">Active Students</div>
         </div>
-
-        <div class="card">
-          <div class="card-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-            </svg>
-          </div>
-          <h3 class="card-title">Fasilitas Lengkap</h3>
-          <p class="card-desc">Ruang kelas nyaman, laboratorium, dan perpustakaan</p>
-          <ul class="feature-list">
-            <li>Gedung Milik Sendiri</li>
-            <li>Lab Komputer & Sains</li>
-            <li>Lapangan Olahraga</li>
-          </ul>
+        <div class="text-center p-8 bg-white/5 backdrop-blur-lg rounded-3xl border border-white/10 transition-colors hover:bg-white/10">
+          <div class="font-heading font-black text-5xl text-primary-400 mb-2">30+</div>
+          <div class="text-white/60 text-xs font-bold uppercase tracking-[3px]">Years Experience</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="cta">
-    <div class="container">
-      <h2 class="cta-title">Bergabunglah Bersama Kami!</h2>
-      <p class="cta-desc">Pendaftaran Peserta Didik Baru (PPDB) Tahun Ajaran 2026/2027 telah dibuka</p>
-      <a href="/ppdb" class="btn">Daftar Sekarang</a>
+  <!-- PPDB Banner -->
+  <section class="container -mt-16 relative z-30">
+    <div class="bg-gradient-to-r from-accent-500 to-accent-600 p-12 md:p-16 rounded-[3rem] shadow-2xl overflow-hidden relative group">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
+        
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10">
+            <div class="text-center lg:text-left text-white max-w-xl">
+                <h2 class="font-heading font-black text-4xl md:text-5xl mb-6">Pendaftaran Siswa Baru Telah Dibuka!</h2>
+                <p class="text-white/90 text-lg font-medium leading-relaxed">
+                    Mari bergabung bersama keluarga besar SisfoKK Sentani untuk masa depan yang lebih cerah dengan pendidikan berbasis karakter.
+                </p>
+            </div>
+            <div class="shrink-0 flex flex-col sm:flex-row gap-4">
+                <a href="/ppdb" class="px-12 py-5 rounded-2xl bg-white text-accent-600 font-black text-xl hover:scale-105 transition-transform no-underline flex items-center gap-3">
+                    DAFTAR SEKARANG
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                    </svg>
+                </a>
+            </div>
+        </div>
     </div>
   </section>
 
   <!-- News Section -->
-  <section class="section">
+  <section class="py-32 bg-gray-50">
     <div class="container">
-      <div class="section-header">
-        <span class="section-badge">Berita Terbaru</span>
-        <h2 class="section-title">Kabar Sekolah</h2>
-        <p class="section-desc">Informasi terkini seputar kegiatan dan prestasi sekolah</p>
+      <div class="text-center mb-20">
+        <span class="text-primary-600 font-bold tracking-[0.25em] uppercase text-xs mb-4 block">Our Story</span>
+        <h2 class="font-heading font-extrabold text-4xl md:text-5xl text-gray-900">Kabar <span class="text-primary-600">Sekolah</span> Terbaru</h2>
       </div>
 
-      <div class="grid grid-3">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
         {displayNews.map((item) => (
-          <article class="news-card">
-            <img src={getImageUrl(item.featured_image, 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop')} alt={item.judul} />
-            <div class="news-card-content">
-              <span class="news-card-date">{formatDate(item.published_at)}</span>
-              <h3 class="news-card-title">{item.judul}</h3>
-              <p class="news-card-excerpt">{item.ringkasan || item.judul}</p>
+          <article class="group bg-white rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
+            <div class="relative aspect-[4/3] overflow-hidden">
+              <img 
+                src={getImageUrl(item.featured_image, 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800')} 
+                alt={item.judul} 
+                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div class="absolute top-6 left-6 px-4 py-1.5 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[2px] rounded-lg">
+                NEWS
+              </div>
+            </div>
+            <div class="p-8 flex flex-col flex-1">
+              <div class="flex items-center gap-3 text-gray-400 text-xs font-bold uppercase tracking-wider mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="14" height="14">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+                </svg>
+                {formatDate(item.published_at)}
+              </div>
+              <h3 class="font-heading font-bold text-xl text-gray-900 mb-4 group-hover:text-primary-600 transition-colors leading-snug">
+                {item.judul}
+              </h3>
+              <p class="text-gray-500 text-sm leading-relaxed mb-8 flex-1">
+                {item.ringkasan || item.judul}
+              </p>
+              <a href={`/berita/${item.slug || item.id}`} class="flex items-center gap-2 font-bold text-gray-900 group-hover:gap-4 transition-all no-underline text-xs uppercase tracking-[2px]">
+                READ MORE
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" width="14" height="14" class="text-primary-600">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                </svg>
+              </a>
             </div>
           </article>
         ))}
       </div>
 
-      <div style="text-align: center; margin-top: 2rem;">
-        <a href="/berita" class="btn btn-primary">Lihat Semua Berita</a>
+      <div class="text-center mt-20">
+        <a href="/berita" class="inline-block px-12 py-4 rounded-2xl border-2 border-gray-200 text-gray-900 font-black text-sm uppercase tracking-[3px] hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all no-underline">
+          View All Stories
+        </a>
       </div>
     </div>
   </section>
 </Layout>
 
 <script is:inline>
-  // Initialize Swiper
   document.addEventListener('DOMContentLoaded', function() {
     new Swiper('.hero-slider', {
       loop: true,
       autoplay: {
-        delay: 5000,
+        delay: 8000,
         disableOnInteraction: false,
       },
       pagination: {
         el: '.swiper-pagination',
         clickable: true,
+        renderBullet: function (index, className) {
+          return '<span class="' + className + ' !w-12 !h-1 !rounded-full !bg-white/30 !opacity-100 transition-all hover:bg-white/50"></span>';
+        },
       },
       navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
+        nextEl: '.swiper-next',
+        prevEl: '.swiper-prev',
       },
       effect: 'fade',
       fadeEffect: {
@@ -273,93 +291,15 @@ const displayNews = news.length > 0 ? news : [
   });
 </script>
 
-<style>
-  .hero-slider {
-    width: 100%;
-    height: auto;
-  }
-  
-  .hero-slider :global(.swiper-pagination-bullet) {
-    background: white;
-    opacity: 0.5;
-  }
-  
-  .hero-slider :global(.swiper-pagination-bullet-active) {
-    background: var(--primary-500);
-    opacity: 1;
-  }
-  
-  .hero-slider :global(.swiper-button-next),
-  .hero-slider :global(.swiper-button-prev) {
-    color: white;
-    background: rgba(0, 0, 0, 0.2);
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    backdrop-filter: blur(4px);
-  }
-  
-  .hero-slider :global(.swiper-button-next:after),
-  .hero-slider :global(.swiper-button-prev:after) {
-    font-size: 1.5rem;
+<style is:global>
+  .swiper-pagination-bullet-active {
+    background-color: white !important;
+    width: 3rem !important;
   }
 
-  .card-list, .feature-list {
-    list-style: none;
-    padding: 0;
-    margin: 1.25rem 0;
-    text-align: left;
-  }
-  
-  .card-list li, .feature-list li {
-    position: relative;
-    padding-left: 1.5rem;
-    margin-bottom: 0.625rem;
-    color: var(--gray-600);
-    font-size: 0.95rem;
-    line-height: 1.4;
-  }
-  
-  .card-list li::before, .feature-list li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--primary-500);
-    font-weight: 700;
-  }
-
-  .stats-grid {
-    list-style: none;
-  }
-
-  .stat {
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    padding: 2.5rem 1.5rem;
-    border-radius: var(--radius-lg);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(4px);
-  }
-
-  .stat:hover {
-    border-color: rgba(255, 255, 255, 1);
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-8px);
-    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.3);
-  }
-
-  /* Adjustments for better spacing with lists */
-  .unit-card {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .unit-card .btn {
-    margin-top: auto;
-  }
-
-  .card {
-    display: flex;
-    flex-direction: column;
+  /* Force visibility for swiper active slide if Tailwind variant fails */
+  .swiper-slide-active .opacity-0 {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
   }
 </style>

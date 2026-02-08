@@ -100,8 +100,10 @@ class GuruResource extends BaseResource
                     ->maxLength(255),
                 Forms\Components\TextInput::make('pendidikan_terakhir')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('foto')
-                    ->maxLength(255),
+Forms\Components\FileUpload::make('foto')
+                    ->image()
+                    ->directory('guru-photos')
+                    ->visibility('public'),
                 Forms\Components\DatePicker::make('tanggal_bergabung'),
                 Forms\Components\Toggle::make('is_active')
                     ->required(),

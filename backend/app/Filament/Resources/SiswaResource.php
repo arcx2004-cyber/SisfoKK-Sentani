@@ -161,122 +161,164 @@ class SiswaResource extends Resource
                         };
                         return response()->streamDownload($callback, "template_siswa_skkk.csv", ["Content-Type" => "text/csv"]);
                     }),
-                 Tables\Actions\Action::make("import_siswa")
+                                                                                                 Tables\Actions\Action::make("import_siswa")
                     ->label("Import Siswa")
-                    ->icon("heroicon-o-document-arrow-up")
-                    ->color("primary")
+                    ->icon("heroicon-o-arrow-up-tray")
                     ->form([
                         Forms\Components\FileUpload::make("file")
-                            ->label("File CSV")
-                            ->acceptedFileTypes(["text/csv", "application/vnd.ms-excel", "text/plain"])
+                            ->label("File CSV/Excel")
+                            ->disk("local")
+                            ->directory("imports")
                             ->required()
-                            ->storeFiles(false),
+                            ->acceptedFileTypes(["text/csv", "text/plain", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]),
                     ])
                     ->action(function (array $data) {
-                        $file = $data["file"];
-                        $handle = fopen($file->getRealPath(), "r");
-                        // Clear BOM if exists
+                        try {
+                            $filePath = \Illuminate\Support\Facades\Storage::disk("local")->path($data["file"]);
+                        } catch (\Exception $e) {
+                             \Filament\Notifications\Notification::make()->title("Error Lokasi File")->body($e->getMessage())->danger()->send();
+                             return;
+                        }
+
+                        if (!file_exists($filePath)) {
+                            \Filament\Notifications\Notification::make()->title("File Tidak Ditemukan")->body("File tidak ditemukan di: " . $filePath)->danger()->send();
+                            return;
+                        }
+                        
+                        $handle = fopen($filePath, "r");
+                        if (!$handle) {
+                            \Filament\Notifications\Notification::make()->title("Gagal Membuka File")->danger()->send();
+                            return;
+                        }
+
                         $bom = fread($handle, 3);
                         if ($bom != "\xEF\xBB\xBF") {
                             rewind($handle);
                         }
+
+                        $pos = ftell($handle);
+                        $firstLine = fgets($handle);
+                        fseek($handle, $pos);
+                        $delimiter = (substr_count($firstLine, ";") > substr_count($firstLine, ",")) ? ";" : ",";
                         
-                        $header = fgetcsv($handle, 2000, ",");
-                        
-                        $count = 0;
-                        $errors = [];
-                        
-                        // Get Active Academic Year
-                        $tahunAjaran = TahunAjaran::where("is_active", true)->first();
-                        if (!$tahunAjaran) {
-                            \Filament\Notifications\Notification::make()
-                                ->title("Gagal Import")
-                                ->body("Tahun Ajaran aktif tidak ditemukan.")
-                                ->danger()
-                                ->send();
+                        $rawHeader = fgetcsv($handle, 4000, $delimiter);
+                        if (!$rawHeader) {
+                            fclose($handle);
                             return;
                         }
 
-                        while (($row = fgetcsv($handle, 2000, ",")) !== FALSE) {
-                            if (empty($row[0])) continue; // Skip empty rows
-                            $dataRec = array_combine($header, $row);
-                            
-                            try {
-                                // Logic to determine Unit and Tingkat from "Rombel Saat Ini"
-                                $rombelNama = $dataRec["Rombel Saat Ini"] ?? "";
-                                $unit_id = 1; // Default to TK
-                                $tingkat = 0;
+                        $header = array_map(fn($h) => trim(strtolower($h)), $rawHeader);
+                        $count = 0;
+                        $errors = [];
+                        
+                        $tahunAjaran = \App\Models\TahunAjaran::where("is_active", true)->first();
+                        if (!$tahunAjaran) {
+                            \Filament\Notifications\Notification::make()->title("Gagal Import")->body("Tahun Ajaran aktif tidak ditemukan.")->danger()->send();
+                            fclose($handle);
+                            return;
+                        }
 
-                                if (preg_match("/Kelas ([1-6])/i", $rombelNama, $matches)) {
-                                    $unit_id = 2; // SD
-                                    $tingkat = (int)$matches[1];
-                                } elseif (preg_match("/Kelas ([7-9])/i", $rombelNama, $matches)) {
-                                    $unit_id = 3; // SMP
-                                    $tingkat = (int)$matches[1];
+                        while (($row = fgetcsv($handle, 4000, $delimiter)) !== FALSE) {
+                            if (empty($row) || (count($row) == 1 && empty($row[0]))) continue;
+
+                            if (count($row) < count($header)) {
+                                $row = array_pad($row, count($header), null);
+                            } elseif (count($row) > count($header)) {
+                                $row = array_slice($row, 0, count($header));
+                            }
+                            
+                            $rawDataRec = array_combine($header, $row);
+                            $dataRec = array_map(function($v) {
+                                if (!is_string($v)) return $v;
+                                $trimmed = trim($v);
+                                return ($trimmed === "") ? null : $trimmed;
+                            }, $rawDataRec);
+
+                            try {
+                                $nama = $dataRec["nama"] ?? $dataRec["nama lengkap"] ?? $dataRec["nama_lengkap"] ?? $dataRec["nama siswa"] ?? null;
+                                if (!$nama) {
+                                    $errors[] = "Baris " . ($count + 2) . ": Nama tidak ditemukan.";
+                                    continue;
                                 }
 
-                                $siswa = Siswa::updateOrCreate(
-                                    ["nis" => $dataRec["NIPD"]],
+                                $nis = $dataRec["nis"] ?? $dataRec["nipd"] ?? $dataRec["no. induk"] ?? $dataRec["nomor induk"] ?? 
+                                       $dataRec["nisn"] ?? $dataRec["nik"] ?? "AUTO-" . strtoupper(uniqid());
+
+                                // Robust Date Parsing
+                                $tanggalLahirRaw = $dataRec["tanggal lahir"] ?? $dataRec["tgl lahir"] ?? null;
+                                $tanggalLahir = null;
+                                if ($tanggalLahirRaw) {
+                                    try {
+                                        if (strpos($tanggalLahirRaw, "/") !== false) {
+                                            $tanggalLahir = \Carbon\Carbon::createFromFormat("d/m/Y", $tanggalLahirRaw)->format("Y-m-d");
+                                        } else {
+                                            $tanggalLahir = \Carbon\Carbon::parse($tanggalLahirRaw)->format("Y-m-d");
+                                        }
+                                    } catch (\Exception $de) {
+                                        // Ignore parsing error for date, keep it null
+                                    }
+                                }
+
+                                // NIK Sanitization & Cleanup
+                                $nik = $dataRec["nik"] ?? null;
+                                if ($nik && (stripos($nik, "E+") !== false || strpos($nik, ",") !== false)) {
+                                    $nik = null; // Clear scientific notation garbage
+                                }
+                                if ($nik && \App\Models\Siswa::where("nik", $nik)->where("nis", "!=", $nis)->exists()) {
+                                    $nik = null; // Prevent duplicate crash
+                                }
+
+                                $rombelNama = $dataRec["rombel saat ini"] ?? $dataRec["rombel"] ?? $dataRec["kelas"] ?? "";
+                                $unit_id = 1; 
+                                $tingkat = 0;
+
+                                if (preg_match("/(?:Kelas|Klasi?|Grade)\s*([1-6])/i", $rombelNama, $matches)) {
+                                    $unit_id = 2; 
+                                    $tingkat = (int)$matches[1];
+                                } elseif (preg_match("/(?:Kelas|Klasi?|Grade)\s*([7-9])/i", $rombelNama, $matches)) {
+                                    $unit_id = 3; 
+                                    $tingkat = (int)$matches[1];
+                                } elseif (stripos($rombelNama, "SMP") !== false) { $unit_id = 3; }
+                                  elseif (stripos($rombelNama, "SD") !== false) { $unit_id = 2; }
+
+                                $siswa = \App\Models\Siswa::updateOrCreate(
+                                    ["nis" => $nis],
                                     [
                                         "unit_id" => $unit_id,
-                                        "nama_lengkap" => $dataRec["Nama"],
-                                        "nisn" => $dataRec["NISN"] ?? null,
-                                        "nik" => $dataRec["NIK"] ?? null,
-                                        "jenis_kelamin" => substr(strtoupper($dataRec["JK"] ?? "L"), 0, 1),
-                                        "tempat_lahir" => $dataRec["Tempat Lahir"] ?? null,
-                                        "tanggal_lahir" => $dataRec["Tanggal Lahir"] ?: null,
-                                        "agama" => $dataRec["Agama"] ?: "Kristen",
-                                        "alamat" => $dataRec["Alamat"] ?? null,
-                                        "rt" => $dataRec["RT"] ?? null,
-                                        "rw" => $dataRec["RW"] ?? null,
-                                        "kelurahan" => $dataRec["Kelurahan"] ?? null,
-                                        "kecamatan" => $dataRec["Kecamatan"] ?? null,
-                                        "kode_pos" => $dataRec["Kode Pos"] ?? null,
-                                        "jenis_tinggal" => $dataRec["Jenis Tinggal"] ?? null,
-                                        "alat_transportasi" => $dataRec["Alat Transportasi"] ?? null,
-                                        "no_telepon" => $dataRec["HP"] ?? null,
-                                        "email_ortu" => $dataRec["E-Mail"] ?? null,
-                                        "nama_ayah" => $dataRec["Nama Ayah"] ?? null,
-                                        "pekerjaan_ayah" => $dataRec["Pekerjaan Ayah"] ?? null,
-                                        "nama_ibu" => $dataRec["Nama Ibu"] ?? null,
-                                        "pekerjaan_ibu" => $dataRec["Pekerjaan Ibu"] ?? null,
-                                        "sekolah_asal" => $dataRec["Sekolah Asal"] ?? null,
+                                        "nama_lengkap" => $nama,
+                                        "nisn" => $dataRec["nisn"] ?? null,
+                                        "nik" => $nik,
+                                        "jenis_kelamin" => substr(strtoupper($dataRec["jk"] ?? $dataRec["jenis kelamin"] ?? "L"), 0, 1),
+                                        "tempat_lahir" => $dataRec["tempat lahir"] ?? null,
+                                        "tanggal_lahir" => $tanggalLahir,
+                                        "agama" => $dataRec["agama"] ?: "Kristen",
+                                        "alamat" => $dataRec["alamat"] ?? null,
+                                        "rt" => $dataRec["rt"] ?? null,
+                                        "rw" => $dataRec["rw"] ?? null,
+                                        "dusun" => $dataRec["dusun"] ?? null,
+                                        "kelurahan" => $dataRec["kelurahan"] ?? $dataRec["desa"] ?? null,
+                                        "kecamatan" => $dataRec["kecamatan"] ?? null,
+                                        "kode_pos" => $dataRec["kode pos"] ?? null,
+                                        "nama_ayah" => $dataRec["nama ayah"] ?? $dataRec["ayah"] ?? null,
+                                        "nama_ibu" => $dataRec["nama ibu"] ?? $dataRec["ibu"] ?? null,
+                                        "sekolah_asal" => $dataRec["sekolah asal"] ?? null,
                                         "status" => "aktif",
                                     ]
                                 );
 
-                                // Handle Rombel Assignment
                                 if (!empty($rombelNama)) {
-                                    // Find a default ruang_kelas for this unit
-                                    $ruangKelas = RuangKelas::where("unit_id", $unit_id)->first();
+                                    $ruangKelas = \App\Models\RuangKelas::where("unit_id", $unit_id)->first();
                                     $ruang_kelas_id = $ruangKelas ? $ruangKelas->id : 1;
 
-                                    // Find or Create Rombel
-                                    $rombel = Rombel::firstOrCreate(
-                                        [
-                                            "nama" => $rombelNama,
-                                            "tahun_ajaran_id" => $tahunAjaran->id,
-                                            "unit_id" => $unit_id,
-                                        ],
-                                        [
-                                            "tingkat" => $tingkat,
-                                            "ruang_kelas_id" => $ruang_kelas_id,
-                                        ]
+                                    $rombel = \App\Models\Rombel::firstOrCreate(
+                                        ["nama" => $rombelNama, "tahun_ajaran_id" => $tahunAjaran->id, "unit_id" => $unit_id],
+                                        ["tingkat" => $tingkat, "ruang_kelas_id" => $ruang_kelas_id]
                                     );
 
-                                    // Check if student is already in this rombel
-                                    $isAlreadyIn = AnggotaRombel::where("siswa_id", $siswa->id)
-                                        ->where("rombel_id", $rombel->id)
-                                        ->exists();
-                                    
-                                    if (!$isAlreadyIn) {
-                                        AnggotaRombel::create([
-                                            "siswa_id" => $siswa->id,
-                                            "rombel_id" => $rombel->id,
-                                        ]);
+                                    if (!\App\Models\AnggotaRombel::where("siswa_id", $siswa->id)->where("rombel_id", $rombel->id)->exists()) {
+                                        \App\Models\AnggotaRombel::create(["siswa_id" => $siswa->id, "rombel_id" => $rombel->id]);
                                     }
                                 }
-
                                 $count++;
                             } catch (\Exception $e) {
                                 $errors[] = "Baris " . ($count + 2) . ": " . $e->getMessage();
@@ -284,26 +326,18 @@ class SiswaResource extends Resource
                         }
                         fclose($handle);
 
-                        if ($count > 0) {
-                            \Filament\Notifications\Notification::make()
-                                ->title($count . " Siswa Berhasil Diimpor")
-                                ->success()
-                                ->send();
-                        }
-
-                        if (count($errors) > 0) {
-                            \Filament\Notifications\Notification::make()
-                                ->title("Beberapa baris gagal diimpor")
-                                ->body(implode("\n", array_slice($errors, 0, 5)))
-                                ->danger()
-                                ->persistent()
-                                ->send();
-                        }
+                        if ($count > 0) \Filament\Notifications\Notification::make()->title($count . " Siswa Berhasil Diimpor")->success()->send();
+                        if (count($errors) > 0) \Filament\Notifications\Notification::make()->title("Beberapa baris bermasalah")->body(implode("\n", array_slice($errors, 0, 5)))->danger()->persistent()->send();
                     }),
-                 Tables\Actions\Action::make("cetak_data")
+                Tables\Actions\Action::make("cetak_data")
                     ->label("Cetak Data Siswa")
                     ->icon("heroicon-o-printer")
-                    ->url(fn () => route("siswa.print-all"))
+                    ->url(fn () => route("siswa.print-all", match (static::class) {
+                        'App\\Filament\\Resources\\SiswaTKResource' => ['unit' => 'TK'],
+                        'App\\Filament\\Resources\\SiswaSDResource' => ['unit' => 'SD'],
+                        'App\\Filament\\Resources\\SiswaSMPResource' => ['unit' => 'SMP'],
+                        default => [],
+                    }))
                     ->openUrlInNewTab(),
             ])
             ->columns([

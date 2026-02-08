@@ -75,14 +75,38 @@ class PpdbApiController extends Controller
         // Prepare data
         $data = $request->except(['akta_kelahiran', 'kartu_keluarga', 'ijazah_skhu', 'unit_code', 'pas_foto']);
         $data['nomor_pendaftaran'] = $nomorPendaftaran;
-        $data['status'] = 'pending';
+        $data['status'] = 'baru';
 
         // Save Pas Foto
         if ($request->hasFile('pas_foto')) {
             $data['pas_foto'] = $request->file('pas_foto')->store('pas-foto-ppdb', 'public');
         }
 
+        
         $pendaftaran = Pendaftaran::create($data);
+
+        // Notify Admins
+        try {
+            $admins = \App\Models\User::all();
+            foreach ($admins as $admin) {
+                \Filament\Notifications\Notification::make()
+                    ->title('Pendaftaran Baru: ' . $request->nama_lengkap)
+                    ->body("Unit: " . $unitCode)
+                    ->icon('heroicon-o-user-plus')
+                    ->warning()
+                    ->actions([
+                        \Filament\Notifications\Actions\Action::make('Lihat')
+                            ->button()
+                            ->url('/admin/pendaftarans/' . $pendaftaran->id . '/edit')
+                            ->markAsRead(),
+                    ])
+                    ->sendToDatabase($admin);
+            }
+        } catch (\Exception $e) {
+            // Silently fail for notifications to not block registration
+            \Illuminate\Support\Facades\Log::error('Registration Notification Error: ' . $e->getMessage());
+        }
+
 
         // Upload documents
         $dokumenTypes = [

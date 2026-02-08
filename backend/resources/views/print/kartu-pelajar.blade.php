@@ -53,12 +53,12 @@
         <div class="relative z-10 flex items-center pt-4 px-5">
             <!-- Logo -->
             <div class="flex-shrink-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm p-1">
-                 <img src="{{ asset('images/logo.png') }}" onerror="this.src='https://ui-avatars.com/api/?name=SP&background=0D8ABC&color=fff'" class="w-full h-full object-contain" alt="Logo">
+                 <img src="{{ asset('logo.png') }}" onerror="this.src='https://ui-avatars.com/api/?name=SP&background=0D8ABC&color=fff'" class="w-full h-full object-contain" alt="Logo">
             </div>
             <div class="ml-3 text-white">
                 <h1 class="text-[10px] font-bold tracking-[0.2em] uppercase opacity-90">KARTU PELAJAR</h1>
-                <h2 class="text-[12px] font-extrabold uppercase tracking-wide leading-tight mt-px">SEKOLAH PENGGERAK</h2>
-                <p class="text-[6px] opacity-75 font-light">Jl. Sentani No. 6, Jayapura</p>
+                <h2 class="text-[12px] font-extrabold uppercase tracking-wide leading-tight mt-px">{{ strtoupper() }}</h2>
+                <p class="text-[6px] opacity-75 font-light">{{  }}</p>
             </div>
         </div>
 
@@ -135,9 +135,9 @@
             <p class="text-[6px] text-gray-500 mb-1">Mengetahui,</p>
             <p class="text-[6px] text-gray-500 mb-4">Kepala Sekolah</p>
              <div class="relative">
-                <p class="text-[8px] font-bold text-blue-900 border-b border-gray-300 pb-0.5 inline-block min-w-[60px]">Dr. H. Budi Santoso</p>
+                <p class="text-[8px] font-bold text-blue-900 border-b border-gray-300 pb-0.5 inline-block min-w-[60px]">{{  }}</p>
             </div>
-            <p class="text-[6px] text-gray-400 mt-0.5">NIP. 19750101 200001 1 001</p>
+            <p class="text-[6px] text-gray-400 mt-0.5">NIP. {{  }}</p>
         </div>
 
         <!-- Decorative stripe bottom -->

@@ -4,11 +4,12 @@ import { fetchSettings } from '../lib/api';
 
 const settings = await fetchSettings();
 
+// Default fallback data
 const contactData = {
-  address: settings.school_address || 'Jl. Pos 7 Sentani, Jayapura, Papua',
-  phone: settings.school_phone || '081234567890',
-  whatsapp: settings.school_whatsapp || '6281234567890',
-  email1: settings.school_email || 'info@skkksentani.sch.id',
+  address: settings.school_address || 'Jl. Raya Sentani, Sentani, Jayapura, Papua 99352',
+  phone: settings.school_phone || '(0967) 123456',
+  whatsapp: settings.school_whatsapp || '628124812907',
+  email1: settings.school_email || 'sekolah@kalamkudussentani.sch.id',
   email2: settings.school_email2 || '',
   map_embed: settings.google_maps_embed || '',
   map_lat: settings.google_maps_latitude || '-2.5697',
@@ -19,11 +20,12 @@ const contactData = {
   youtube: settings.school_youtube || '',
 };
 
+// Handle Google Maps search URL
 const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},${contactData.map_lng}`;
 ---
 
 <Layout title="Kontak">
-  <section class="hero" style="min-height: 300px;">
+  <section class="hero">
     <div class="hero-content">
       <span class="hero-badge">📞 Hubungi Kami</span>
       <h1 class="hero-title">Kontak</h1>
@@ -33,71 +35,107 @@ const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},
 
   <section class="section">
     <div class="container">
-      <div class="contact-grid">
-        <div class="contact-info">
+      <div class="grid grid-2" style="gap: 4rem;">
+        <div>
           <h2 class="section-title" style="text-align: left; margin-bottom: 2rem;">Informasi Kontak</h2>
           
-          <div class="card info-card">
+          <div class="card" style="margin-bottom: 1.5rem;">
             <h3 class="card-title">📍 Alamat</h3>
             <p class="card-desc" set:html={contactData.address.replace(/,/g, '<br>')}></p>
           </div>
 
-          <div class="card info-card">
+          <div class="card" style="margin-bottom: 1.5rem;">
             <h3 class="card-title">📞 Telepon</h3>
             <p class="card-desc">
-              <a href={`tel:${contactData.phone}`} style="color: var(--primary-600); text-decoration: none;">{contactData.phone}</a>
+              <a href={`tel:${contactData.phone}`} style="color: var(--primary-600);">{contactData.phone}</a>
             </p>
           </div>
 
-          <div class="card info-card">
+          <div class="card" style="margin-bottom: 1.5rem;">
             <h3 class="card-title">💬 WhatsApp</h3>
             <p class="card-desc">
-              <a href={`https://wa.me/${contactData.whatsapp}`} target="_blank" rel="noopener" style="color: var(--success); text-decoration: none;">
+              <a href={`https://wa.me/${contactData.whatsapp}`} target="_blank" rel="noopener" style="color: var(--success);">
                 +{contactData.whatsapp}
               </a>
             </p>
           </div>
 
-          <div class="card info-card">
+          <div class="card" style="margin-bottom: 1.5rem;">
             <h3 class="card-title">✉️ Email</h3>
             <p class="card-desc">
-              <a href={`mailto:${contactData.email1}`} style="color: var(--primary-600); text-decoration: none;">{contactData.email1}</a>
+              <a href={`mailto:${contactData.email1}`} style="color: var(--primary-600);">{contactData.email1}</a>
+              {contactData.email2 && (
+                <>
+                  <br />
+                  <a href={`mailto:${contactData.email2}`} style="color: var(--primary-600);">{contactData.email2}</a>
+                </>
+              )}
             </p>
+          </div>
+
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <h3 class="card-title">🌐 Media Sosial</h3>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+              {contactData.instagram && (
+                <a href={`https://instagram.com/${contactData.instagram.replace('@', '')}`} target="_blank" rel="noopener" class="social-link" title="Instagram">
+                  📸 @{contactData.instagram.replace('@', '')}
+                </a>
+              )}
+              {contactData.facebook && (
+                <a href={contactData.facebook} target="_blank" rel="noopener" class="social-link" title="Facebook">
+                  FB
+                </a>
+              )}
+              {contactData.youtube && (
+                <a href={`https://youtube.com/${contactData.youtube.startsWith('@') ? contactData.youtube : '@' + contactData.youtube}`} target="_blank" rel="noopener" class="social-link" title="YouTube">
+                  YT
+                </a>
+              )}
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">⏰ Jam Operasional</h3>
+            <p class="card-desc" set:html={contactData.operational_hours.replace(/,/g, '<br>')}></p>
           </div>
         </div>
 
-        <div class="contact-form-container">
+        <div>
           <h2 class="section-title" style="text-align: left; margin-bottom: 2rem;">Kirim Pesan</h2>
           
-          <form class="card form-card" id="contactForm">
-            <div class="form-group">
-              <label>Nama Lengkap</label>
-              <input type="text" name="name" required placeholder="Masukkan nama lengkap" />
+          <form class="card" style="padding: 2rem;">
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Nama Lengkap</label>
+              <input type="text" placeholder="Masukkan nama lengkap" 
+                     style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem;" />
             </div>
 
-            <div class="form-group">
-              <label>Email</label>
-              <input type="email" name="email" required placeholder="email@example.com" />
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Email</label>
+              <input type="email" placeholder="email@example.com" 
+                     style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem;" />
             </div>
 
-            <div class="form-group">
-              <label>Subjek</label>
-              <input type="text" name="subject" required placeholder="Tentang apa?" />
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Subjek</label>
+              <input type="text" placeholder="Tentang apa?" 
+                     style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem;" />
             </div>
 
-            <div class="form-group">
-              <label>Pesan</label>
-              <textarea name="content" required rows="5" placeholder="Tulis pesan Anda..."></textarea>
+            <div style="margin-bottom: 1.5rem;">
+              <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--gray-700);">Pesan</label>
+              <textarea rows="5" placeholder="Tulis pesan Anda..." 
+                        style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--gray-300); border-radius: var(--radius); font-size: 1rem; resize: vertical;"></textarea>
             </div>
 
-            <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%;">Kirim Pesan</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Kirim Pesan</button>
           </form>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- RE-ADDED: Google Maps Section -->
+  <!-- Google Maps Section -->
   <section class="section" style="padding-top: 0;">
     <div class="container">
       <div class="section-header">
@@ -112,7 +150,7 @@ const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},
           <div set:html={contactData.map_embed} class="google-map-embed" />
         ) : (
           <iframe 
-            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3986.28!2d140.5047!3d-2.5697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLocation!5e0!3m2!1sen!2sid!4v1704100000000!5m2!1sen!2sid`}
+            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3986.28!2d${contactData.map_lng}!3d${contactData.map_lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLocation!5e0!3m2!1sen!2sid!4v1704100000000!5m2!1sen!2sid`}
             width="100%" 
             height="450" 
             style="border:0; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);" 
@@ -127,106 +165,35 @@ const mapSearchUrl = `https://www.google.com/maps/search/${contactData.map_lat},
            target="_blank" 
            rel="noopener noreferrer"
            class="btn btn-outline"
-           style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-600); color: white; border: none;">
+           style="display: inline-flex; align-items: center; gap: 0.5rem;">
           <span>📍</span> Buka di Google Maps
         </a>
       </div>
     </div>
   </section>
-
-  <script define:vars={{ API_URL: import.meta.env.PUBLIC_API_URL }}>
-    const API_BASE = API_URL || 'http://skkksentani.web.id:8080/api/v1';
-    const form = document.getElementById('contactForm');
-    const submitBtn = document.getElementById('submitBtn');
-
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Mengirim...';
-            submitBtn.disabled = true;
-
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData.entries());
-
-            try {
-                const response = await fetch(`${API_BASE}/contact`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert(result.message || 'Pesan terkirim!');
-                    form.reset();
-                } else {
-                    alert('Gagal: ' + (result.message || 'Error'));
-                }
-            } catch (error) {
-                alert('Gagal mengirim pesan.');
-            } finally {
-                submitBtn.textContent = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-    }
-  </script>
-
   <style>
-    .contact-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.5fr;
-        gap: 4rem;
-        align-items: start;
-    }
-    @media (max-width: 900px) {
-        .contact-grid {
-            grid-template-columns: 1fr;
-            gap: 3rem;
-        }
-    }
-    
-    .info-card {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-card {
-        padding: 2.5rem;
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-group label {
-        display: block; 
-        font-weight: 600; 
-        margin-bottom: 0.5rem; 
-        color: var(--gray-700);
-    }
-    
-    .form-group input, 
-    .form-group textarea {
-        width: 100%; 
-        padding: 0.75rem 1rem; 
-        border: 1px solid var(--gray-300); 
-        border-radius: var(--radius); 
-        font-size: 1rem;
-        transition: border-color 0.2s;
-    }
-    
-    .form-group input:focus, 
-    .form-group textarea:focus {
-        outline: none;
-        border-color: var(--primary-500);
-        box-shadow: 0 0 0 3px var(--primary-100);
-    }
     .google-map-embed :global(iframe) {
       width: 100% !important;
       height: 450px !important;
       border: 0 !important;
       border-radius: var(--radius-lg) !important;
       box-shadow: var(--shadow-lg) !important;
+    }
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background: var(--gray-100);
+      border-radius: var(--radius);
+      color: var(--gray-700);
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .social-link:hover {
+      background: var(--primary-100);
+      color: var(--primary-700);
+      transform: translateY(-2px);
     }
   </style>
 </Layout>

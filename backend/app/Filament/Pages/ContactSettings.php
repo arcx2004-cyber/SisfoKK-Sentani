@@ -29,7 +29,7 @@ class ContactSettings extends Page implements HasForms
     
     public static function shouldRegisterNavigation(): bool
     {
-        return static::canAccess();
+        return false; // Hidden as requested
     }
 
     public ?array $data = [];

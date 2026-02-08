@@ -6,6 +6,7 @@ use App\Models\Siswa;
 use App\Models\Semester;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\SchoolSetting;
 
 class SiswaPrintController extends Controller
 {
@@ -20,6 +21,15 @@ class SiswaPrintController extends Controller
              $unitName = $user->guru->unit->nama;
         } else {
             $unitName = 'Semua Unit';
+        }
+
+        // Filter by Params if exists
+        if (request()->has('unit')) {
+            $unitCode = request('unit');
+            $query->whereHas('unit', function($q) use ($unitCode) {
+                $q->where('kode', $unitCode);
+            });
+            $unitName = 'Unit ' . $unitCode;
         }
 
         // 2. Fetch Data with Unit and Active Rombel
@@ -38,7 +48,7 @@ class SiswaPrintController extends Controller
         });
 
         // 4. Calculate Recap
-        $recap = [];
+        $recap = ['rombels' => []];
         $totalSiswa = $siswas->count();
         $totalL = 0;
         $totalP = 0;
@@ -71,5 +81,23 @@ class SiswaPrintController extends Controller
         ]);
 
         return $pdf->stream('data-siswa.pdf');
+    }
+
+    public function printKartuPelajar(Siswa $siswa)
+    {
+        if (!auth()->user() || (auth()->user()->hasRole('siswa') && auth()->user()->siswa->id !== $siswa->id && !auth()->user()->can('view_any_siswa'))) {
+             abort(403);
+        }
+
+        // Preload relationships for view
+        $siswa->load(['unit']);
+
+        return view('print.kartu-pelajar', [
+            'student' => $siswa,
+            'school_name' => SchoolSetting::get('school_name', 'Sekolah Kristen Kalam Kudus Sentani'),
+            'principal_name' => SchoolSetting::get('principal_name', '..........................'),
+            'principal_nip' => SchoolSetting::get('principal_nip', '-'),
+            'school_address' => SchoolSetting::get('school_address', 'Jl. Sentani No. 6, Jayapura'),
+        ]);
     }
 }

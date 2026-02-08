@@ -24,7 +24,7 @@ class SchoolSettingResource extends BaseResource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->hasRole(['super_admin', 'admin']);
+        return false; // Hidden as requested
     }
 
     public static function form(Form $form): Form

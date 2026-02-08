@@ -1,0 +1,72 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchDocuments, formatDate, getImageUrl } from '../../lib/api';
+import type { Document } from '../../lib/api';
+
+const documents = await fetchDocuments();
+
+// Group documents by type
+const groupedDocuments = documents.reduce((acc, doc) => {
+  const type = doc.type || 'Lainnya';
+  if (!acc[type]) {
+    acc[type] = [];
+  }
+  acc[type].push(doc);
+  return acc;
+}, {} as Record<string, Document[]>);
+
+const typeLabels: Record<string, string> = {
+  'akademik': 'Akademik',
+  'formulir': 'Formulir',
+  'tata_tertib': 'Tata Tertib',
+  'lainnya': 'Lainnya',
+  'Lainnya': 'Lainnya'
+};
+---
+
+<Layout title="Unduhan Dokumen">
+  <div class="bg-gray-50 min-h-screen py-10">
+    <div class="container mx-auto px-4">
+      <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">Unduhan Dokumen</h1>
+
+      {documents.length === 0 ? (
+        <div class="text-center text-gray-500 py-10">
+          <p>Belum ada dokumen yang tersedia untuk diunduh.</p>
+        </div>
+      ) : (
+        <div class="space-y-10">
+            {Object.entries(groupedDocuments).map(([type, docs]) => (
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold text-primary mb-4 border-b pb-2">
+                        {typeLabels[type] || type.charAt(0).toUpperCase() + type.slice(1)}
+                    </h2>
+                    <ul class="space-y-3">
+                        {docs.map((doc) => (
+                            <li class="flex items-start md:items-center justify-between p-3 hover:bg-gray-50 rounded-md border border-gray-100 transition">
+                                <div class="flex-1 mr-4">
+                                    <h3 class="font-medium text-gray-700">{doc.title}</h3>
+                                    {doc.description && <p class="text-sm text-gray-500 mt-1">{doc.description}</p>}
+                                    <div class="text-xs text-gray-400 mt-1">
+                                        Diunggah: {formatDate(doc.created_at)}
+                                    </div>
+                                </div>
+                                <a 
+                                    href={getImageUrl(doc.file_path, '#')} 
+                                    target="_blank"
+                                    class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity whitespace-nowrap"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Download
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ))}
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>

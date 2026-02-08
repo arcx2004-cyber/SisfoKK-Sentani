@@ -59,22 +59,25 @@ services:
       - sisfokk_network
     depends_on:
       - php
+      - node
 
-  # Node for Astro Frontend
+  # Node for Astro Frontend (SSR)
   node:
-    image: node:18-alpine
+    image: node:20-alpine
     container_name: sisfokk_node
+    restart: unless-stopped
     working_dir: /var/www/frontend
     volumes:
       - ./frontend:/var/www/frontend
-    # Not exposing port if Nginx serves dist, but keep it for dev/debugging if needed or remove if unused externally
-    ports:
-      - "4321:4321" 
     networks:
       - sisfokk_network
-    command: sh -c "npm install && npm run build && npm run dev -- --host 0.0.0.0"
+    command: sh -c "npm install && npm run build && node ./dist/server/entry.mjs"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=4321
+      - PUBLIC_API_URL=https://skkksentani.web.id/api/v1
 
-  # Redis for caching (optional but recommended)
+  # Redis for caching
   redis:
     image: redis:alpine
     container_name: sisfokk_redis

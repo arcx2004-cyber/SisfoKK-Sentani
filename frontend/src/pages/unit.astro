@@ -24,7 +24,7 @@ function getUnitFeatures(kode: string): string[] {
 ---
 
 <Layout title="Unit Pendidikan">
-  <section class="hero" style="min-height: 300px;">
+  <section class="hero">
     <div class="hero-content">
       <span class="hero-badge">🏫 Jenjang Pendidikan</span>
       <h1 class="hero-title">Unit Pendidikan</h1>
@@ -37,7 +37,17 @@ function getUnitFeatures(kode: string): string[] {
       <div class="grid grid-3">
         {displayUnits.map((unit) => (
           <div class="unit-card">
-            <div class="unit-icon">{getUnitIcon(unit.kode)}</div>
+            <div class="unit-icon">
+              {unit.kode === 'TK' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 0-8 16"/><path d="m14 2 2 4"/><path d="m5 16 3-3"/><path d="M12 2a10 10 0 0 1 8 16"/><path d="m10 2-2 4"/><path d="m19 16-3-3"/><path d="M12 11v.01"/><path d="M11 15h2"/><path d="M10 20c0 1 1 2 2 2s2-1 2-2"/></svg>
+              )}
+              {unit.kode === 'SD' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              )}
+              {unit.kode === 'SMP' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.084a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg>
+              )}
+            </div>
             <h3 class="unit-name">{unit.nama}</h3>
             <p class="unit-desc">{unit.deskripsi || `Unit ${unit.nama} Sekolah Kalam Kudus Sentani`}</p>
             <ul style="text-align: left; margin: 1.5rem 0; color: var(--gray-600);">

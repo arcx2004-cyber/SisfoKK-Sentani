@@ -191,11 +191,67 @@ class PublicApiController extends Controller
         ]);
     }
 
+    public function documents(Request $request): JsonResponse
+    {
+        $query = \App\Models\Document::where('is_public', true)->orderBy('created_at', 'desc');
+        
+        if ($request->has('type') && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
+
+        $documents = $query->get();
+        return response()->json([
+            'success' => true,
+            'data' => $documents
+        ]);
+    }
+
+    public function mading(Request $request): JsonResponse
+    {
+        $limit = $request->input('limit', 12);
+        $mading = \App\Models\Mading::where('status', 'published')
+            ->orderBy('published_at', 'desc')
+            ->paginate($limit);
+
+        return response()->json([
+            'success' => true,
+            'data' => $mading
+        ]);
+    }
+
+    public function prestasi(Request $request): JsonResponse
+    {
+        $limit = $request->input('limit', 9);
+        $prestasi = \App\Models\Prestasi::where('is_public', true)
+            ->with(['siswa' => function($q) {
+                $q->select('id', 'nama_lengkap', 'unit_id');
+            }, 'siswa.unit' => function($q) {
+                $q->select('id', 'nama');
+            }])
+            ->orderBy('tanggal', 'desc')
+            ->paginate($limit);
+
+        return response()->json([
+            'success' => true,
+            'data' => $prestasi
+        ]);
+    }
+
+    public function sambutans(): JsonResponse
+    {
+        $sambutans = \App\Models\Sambutan::where('is_active', true)->orderBy('urutan')->get();
+        return response()->json([
+            'success' => true,
+            'data' => $sambutans
+        ]);
+    }
+
     public function sendMessage(Request $request): JsonResponse
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
             'subject' => 'required|string|max:255',
             'content' => 'required|string',
         ]);
@@ -212,10 +268,27 @@ class PublicApiController extends Controller
             \App\Models\Message::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'phone' => $request->phone,
                 'subject' => $request->subject,
                 'content' => $request->content,
-                'status' => 'unread'
+                'is_read' => false
             ]);
+
+            $admins = User::all();
+            foreach ($admins as $admin) {
+                Notification::make()
+                    ->title('Pesan Baru dari ' . $request->name)
+                    ->body($request->subject)
+                    ->icon('heroicon-o-inbox')
+                    ->success()
+                    ->actions([
+                        Action::make('Lihat')
+                            ->button()
+                            ->url('/admin/messages') 
+                            ->markAsRead(),
+                    ])
+                    ->sendToDatabase($admin);
+            }
 
             return response()->json([
                 'success' => true,

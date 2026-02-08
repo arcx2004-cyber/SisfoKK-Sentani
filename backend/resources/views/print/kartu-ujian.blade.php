@@ -1,7 +1,19 @@
 @extends('print.layout')
 
 @section('content')
-    <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid black; padding-bottom: 10px;">
+    
+    <table style="width: 100%; border-bottom: 2px solid black; margin-bottom: 10px;">
+        <tr>
+            <td width="15%" style="text-align: center;">
+                <img src="{{ asset('logo.png') }}" style="width: 70px;">
+            </td>
+            <td width="85%" style="text-align: center;">
+                <h2 style="margin: 0; text-transform: uppercase;">{{ $school_name }}</h2>
+                <p style="margin: 5px 0; font-size: 10pt;">Alamat: Jl. Agus Karitji, Kel. Hinekombe, Sentani, Jayapura</p>
+            </td>
+        </tr>
+    </table>
+<div style="text-align: center; margin-bottom: 20px; padding-bottom: 10px;">
         <h3 style="margin: 0; text-transform: uppercase;">KARTU PESERTA UJIAN</h3>
         <h4 style="margin: 5px 0; text-transform: uppercase;">{{ $title }}</h4>
         <div style="font-size: 10pt;">Tahun Pelajaran: {{ $tahunAjaran->nama }} - Semester {{ $semester->semester }}</div>
@@ -42,7 +54,7 @@
                 Sentani, {{ now()->translatedFormat('d F Y') }}<br>
                 Ketua Panitia Ujian,
                 <br><br><br><br>
-                <strong>( ..................................... )</strong>
+                <strong>( {{ $principal_name }} )</strong><br><small>NIP. {{ $principal_nip }}</small>
             </td>
         </tr>
     </table>
